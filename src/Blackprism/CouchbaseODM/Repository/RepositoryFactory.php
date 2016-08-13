@@ -41,7 +41,6 @@ class RepositoryFactory
     }
 
     /**
-    /**
      * @param ClassName $className
      *
      * @return object
