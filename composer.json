@@ -1,0 +1,35 @@
+{
+    "name": "blackprism/CouchbaseODM",
+    "description": "Couchbase ODM",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Sylvain Robez-Masson",
+            "email": "srm@bouh.org"
+        }
+    ],
+    "require": {
+        "php": ">=7",
+        "ext-couchbase": ">= 2.2.1",
+        "symfony/serializer": "^3.0"
+    },
+    "require-dev": {
+        "phing/phing": "^2.0",
+        "phpmd/phpmd": "^2.0",
+        "sebastian/phpcpd": "^2.0",
+        "squizlabs/php_codesniffer": "^2.0",
+        "atoum/atoum": "^2.6",
+        "atoum/stubs": "^2.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Blackprism\\CouchbaseODM\\": "src/Blackprism/CouchbaseODM/",
+            "Blackprism\\Demo\\": "src/Blackprism/Demo/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "tests\\": "tests/"
+        }
+    }
+}
