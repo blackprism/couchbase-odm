@@ -1,5 +1,5 @@
 {
-    "name": "blackprism/CouchbaseODM",
+    "name": "blackprism/couchbase-odm",
     "description": "Couchbase ODM",
     "license": "Apache-2.0",
     "authors": [
