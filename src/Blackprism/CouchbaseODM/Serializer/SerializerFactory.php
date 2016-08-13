@@ -37,8 +37,24 @@ class SerializerFactory implements SerializerFactoryInterface, PropertyChangedLi
             return $this->serializers[$identifier];
         }
 
+        $encoders[] = new JsonEncoder();
+        $encoders[] = new ArrayDecoder();
+
+        $this->serializers[$identifier] = new Serializer($this->initNormalizers($normalizers), $encoders);
+
+        return $this->serializers[$identifier];
+    }
+
+    /**
+     * @param array $normalizers
+     *
+     * @return array
+     */
+    private function initNormalizers(array $normalizers)
+    {
         $collectionFound = false;
         $mergePathsFound = false;
+
         foreach ($normalizers as $normalizer) {
             if ($normalizer instanceof PropertyChangedListenerAwareInterface) {
                 $normalizer->propertyChangedListenerIs($this->propertyChangedListener);
@@ -61,11 +77,6 @@ class SerializerFactory implements SerializerFactoryInterface, PropertyChangedLi
             $normalizers[] = new Denormalizer\MergePaths();
         }
 
-        $encoders[] = new JsonEncoder();
-        $encoders[] = new ArrayDecoder();
-
-        $this->serializers[$identifier] =  new Serializer($normalizers, $encoders);
-
-        return $this->serializers[$identifier];
+        return $normalizers;
     }
 }
