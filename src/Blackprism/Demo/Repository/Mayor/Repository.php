@@ -2,51 +2,50 @@
 
 namespace Blackprism\Demo\Repository\Mayor;
 
+use Blackprism\CouchbaseODM\Bucket;
+use Blackprism\CouchbaseODM\Connection\ConnectionAwareInterface;
+use Blackprism\CouchbaseODM\Connection\ConnectionAwareTrait;
+use Blackprism\CouchbaseODM\Serializer\Denormalizer;
+use Blackprism\CouchbaseODM\Serializer\SerializerFactoryAwareInterface;
+use Blackprism\CouchbaseODM\Serializer\SerializerFactoryAwareTrait;
+use Blackprism\CouchbaseODM\Value\BucketName;
 use Blackprism\Demo\Repository\Country;
 use Blackprism\Demo\Repository\Mayor;
-use Blackprism\CouchbaseODM\Bucket;
-use Blackprism\CouchbaseODM\Connection;
-use Blackprism\CouchbaseODM\Serializer\Denormalizer;
-use Blackprism\CouchbaseODM\Value\BucketName;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\SerializerInterface;
 
-class Repository
+class Repository implements SerializerFactoryAwareInterface, ConnectionAwareInterface
 {
-    const BUCKET = 'odm-test';
+    use SerializerFactoryAwareTrait;
+    use ConnectionAwareTrait;
 
-    /** @var  Connection */
-    private $connection;
+    const BUCKET_NAME = 'odm-test';
 
-    /** @var  Bucket */
+    /** @var Bucket */
     private $bucket;
 
-    /** @var Serializer */
-    private $serializer;
-
-    public function __construct()
+    /**
+     * @param array $normalizers
+     * @param array $encoders
+     *
+     * @return SerializerInterface
+     */
+    private function getSerializer(array $normalizers = [], array $encoders = [])
     {
-        $normalizers = [
-            new Denormalizer\Collection(),
-            new Denormalizer\MergePaths(Denormalizer\FirstObject::class),
-            new Denormalizer\FirstObject(),
-            new Mayor\Configuration\Denormalizer()
-        ];
+        if ($normalizers === []) {
+            $normalizers = [
+                new Denormalizer\MergePaths(Denormalizer\FirstObject::class),
+                new Denormalizer\FirstObject(),
+                new Mayor\Configuration\Denormalizer()
+            ];
+        }
 
-        $encoders = array(new JsonEncoder());
-
-        $this->serializer = new Serializer($normalizers, $encoders);
-    }
-
-    public function connectionIs(Connection $connection)
-    {
-        $this->connection = $connection;
+        return $this->serializerFactory->get($normalizers, $encoders);
     }
 
     private function getBucket()
     {
         if ($this->bucket === null) {
-            $this->bucket = $this->connection->getBucket(new BucketName(self::BUCKET), $this->serializer);
+            $this->bucket = $this->connection->getBucket(new BucketName(self::BUCKET_NAME));
         }
 
         return $this->bucket;
@@ -64,6 +63,6 @@ class Repository
 
         $result = $this->getBucket()->query($n1ql);
 
-        return $this->getBucket()->deserialize($result);
+        return $this->getSerializer()->deserialize($result->rows(), Denormalizer\Collection::class, 'array');
     }
 }

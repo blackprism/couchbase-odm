@@ -22,7 +22,7 @@ class Repository implements SerializerFactoryAwareInterface, ConnectionAwareInte
 
     const BUCKET_NAME = 'odm-test';
 
-    /** @var  Bucket */
+    /** @var Bucket */
     private $bucket;
 
     /**

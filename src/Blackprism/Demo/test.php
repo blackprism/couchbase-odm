@@ -60,6 +60,11 @@ echo "Ask cities with mayor\n";
 $cities = $cityRepository->getCitiesWithMayor();
 $cities[2]->setName('Paris (edited)');
 var_dump($cities);
+
+
+$mayorRepository = $repositoryFactory->get(new ClassName(Mayor\Repository::class));
+$mayorRepository->connectionIs($connection);
+var_dump($mayorRepository->getMayors());
 die;
 
 
