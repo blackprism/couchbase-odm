@@ -37,10 +37,14 @@ class SerializerFactory implements SerializerFactoryInterface, PropertyChangedLi
             return $this->serializers[$identifier];
         }
 
+        $normalizers = $this->initNormalizers($normalizers);
+        $normalizers = $this->addCollectionIfNotFound($normalizers);
+        $normalizers = $this->addMergePathsIfNotFound($normalizers);
+
         $encoders[] = new JsonEncoder();
         $encoders[] = new ArrayDecoder();
 
-        $this->serializers[$identifier] = new Serializer($this->initNormalizers($normalizers), $encoders);
+        $this->serializers[$identifier] = new Serializer($normalizers, $encoders);
 
         return $this->serializers[$identifier];
     }
@@ -52,25 +56,50 @@ class SerializerFactory implements SerializerFactoryInterface, PropertyChangedLi
      */
     private function initNormalizers(array $normalizers)
     {
-        $collectionFound = false;
-        $mergePathsFound = false;
-
         foreach ($normalizers as $normalizer) {
             if ($normalizer instanceof PropertyChangedListenerAwareInterface) {
                 $normalizer->propertyChangedListenerIs($this->propertyChangedListener);
             }
+        }
 
+        return $normalizers;
+    }
+
+    /**
+     * @param array $normalizers
+     *
+     * @return array
+     */
+    private function addCollectionIfNotFound(array $normalizers)
+    {
+        $collectionFound = false;
+
+        foreach ($normalizers as $normalizer) {
             if ($normalizer instanceof Denormalizer\Collection) {
                 $collectionFound = true;
-            }
-
-            if ($normalizer instanceof Denormalizer\MergePaths) {
-                $mergePathsFound = true;
             }
         }
 
         if ($collectionFound === false) {
             $normalizers[] = new Denormalizer\Collection();
+        }
+
+        return $normalizers;
+    }
+
+    /**
+     * @param array $normalizers
+     *
+     * @return array
+     */
+    private function addMergePathsIfNotFound(array $normalizers)
+    {
+        $mergePathsFound = false;
+
+        foreach ($normalizers as $normalizer) {
+            if ($normalizer instanceof Denormalizer\MergePaths) {
+                $mergePathsFound = true;
+            }
         }
 
         if ($mergePathsFound === false) {
