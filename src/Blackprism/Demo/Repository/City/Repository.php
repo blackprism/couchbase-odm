@@ -31,13 +31,16 @@ class Repository implements SerializerFactoryAwareInterface, ConnectionAwareInte
      *
      * @return SerializerInterface
      */
-    private function getSerializer(array $normalizers = [], array $encoders = [])
+    public function getSerializer(array $normalizers = [], array $encoders = [])
     {
         if ($normalizers === []) {
             $normalizers = [
                 new City\Configuration\Denormalizer(),
+                new City\Configuration\Normalizer(),
                 new Country\Configuration\Denormalizer(),
-                new Mayor\Configuration\Denormalizer()
+                new Country\Configuration\Normalizer(),
+                new Mayor\Configuration\Denormalizer(),
+                new Mayor\Configuration\Normalizer()
             ];
         }
 
@@ -64,6 +67,13 @@ class Repository implements SerializerFactoryAwareInterface, ConnectionAwareInte
         $metaDoc = $this->getBucket()->get($documentId);
 
         return $this->getSerializer()->deserialize($metaDoc->value(), $type, 'json');
+    }
+
+    public function save(array $documents)
+    {
+        foreach ($documents as $id => $document) {
+            $this->getBucket()->update(new DocumentId($id), $document);
+        }
     }
 
     public function getCitiesWithMayor()

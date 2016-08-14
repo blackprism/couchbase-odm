@@ -4,14 +4,20 @@ declare(strict_types = 1);
 
 namespace Blackprism\Demo\Model;
 
-class Mayor
+use Blackprism\CouchbaseODM\Observer\NotifyPropertyChangedInterface;
+use Blackprism\CouchbaseODM\Observer\NotifyPropertyChangedTrait;
+
+class Mayor implements NotifyPropertyChangedInterface
 {
+    use NotifyPropertyChangedTrait;
+
     private $id;
     private $firstname = '';
     private $lastname = '';
 
     public function setId($id)
     {
+        $this->propertyChanged('id', $this->id, $id);
         $this->id = $id;
     }
 
@@ -22,6 +28,7 @@ class Mayor
 
     public function setFirstname(string $firstname)
     {
+        $this->propertyChanged('firstname', $this->firstname, $firstname);
         $this->firstname = $firstname;
     }
 
@@ -32,6 +39,7 @@ class Mayor
 
     public function setLastname(string $lastname)
     {
+        $this->propertyChanged('lastname', $this->lastname, $lastname);
         $this->lastname = $lastname;
     }
 

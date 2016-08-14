@@ -52,6 +52,7 @@ echo "Injected PropertyChangedListener in serializerFactory\n";
 $repositoryFactory = new RepositoryFactory($connection, $serializerFactory);
 echo "RepositoryFactory created\n";
 
+/** @var City\Repository $cityRepository */
 $cityRepository = $repositoryFactory->get(new ClassName(City\Repository::class));
 
 var_dump($cityRepository->get(new DocumentId('test-counter')));
@@ -61,45 +62,24 @@ var_dump($cityRepository->get(new DocumentId('city-1')));
 echo "Ask cities with mayor\n";
 $cities = $cityRepository->getCitiesWithMayor();
 $cities[2]->setName('Paris (edited)');
+$cities[2]->getCountry()->setName('France (edited)');
+$mayor = $cities[2]->getMayor();
+$mayor->setFirstname('Anne (edited)');
+$cities[2]->setMayor($mayor);
 var_dump($cities);
+var_dump($cities[2]);
+
+$serializer = $cityRepository->getSerializer();
+$documentsToUpdate = $serializer->serialize($cities[2], 'array');
+$cityRepository->save($documentsToUpdate);
+var_dump($cities[2], $documentsToUpdate);
+
+die;
 
 
 $mayorRepository = $repositoryFactory->get(new ClassName(Mayor\Repository::class));
 $mayorRepository->connectionIs($connection);
 var_dump($mayorRepository->getMayors());
-die;
-
-
-
-$data = '
-  {
-    "city": {
-      "country": {
-        "name": "France",
-        "type": "country",
-        "mayor": {
-          "firstname": "Christophe",
-          "lastname": "Colin",
-          "type": "mayor"
-        }
-      },
-      "name": "Luxiol",
-      "type": "city"
-    }
-  }
-  ';
-
-
-$data = json_decode($data, true);
-
-var_dump($data);
-var_dump($cityRepository->bucket->update(new DocumentId('odwalla-juice1'), ['place' => 1, 'type' => 'test']));
-die;
-
-$mayorRepository = new Mayor\Repository();
-$mayorRepository->connectionIs($connection);
-var_dump($mayorRepository->getMayors());
-die;
 
 $france = new Model\Country();
 $france->setName('France');
@@ -137,6 +117,11 @@ $cities = [['city' => $luxiol], ['city' => $palaiseau]];
 $cities = ['city' => $luxiol, 'city' => $palaiseau];
 
 var_export($cities);
-$serializer = new Serialize($configuration);
+$serializer = $cityRepository->getSerializer();
 
+$json = $serializer->serialize($palaiseau, 'json');
+
+var_dump($json);
+
+exit;
 system("echo '" . $serializer->serializeCollection($cities) . "' | jsonpp");

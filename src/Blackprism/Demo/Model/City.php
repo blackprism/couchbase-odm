@@ -65,7 +65,6 @@ class City implements NotifyPropertyChangedInterface
 
     public function setMayor(Mayor $mayor)
     {
-        $this->propertyChanged('mayor', $this->mayor, $mayor);
         $this->mayor = $mayor;
     }
 

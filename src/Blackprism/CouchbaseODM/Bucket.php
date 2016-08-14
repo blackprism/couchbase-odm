@@ -87,6 +87,7 @@ final class Bucket
             $couchbaseMutateInBuilder
                 ->upsert($key, $value);
         }
+
         $couchbaseMutateInBuilder
             ->execute();
     }

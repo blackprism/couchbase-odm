@@ -5,6 +5,7 @@ namespace Blackprism\CouchbaseODM\Serializer;
 use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareInterface;
 use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareTrait;
 use Blackprism\CouchbaseODM\Serializer\Encoder\ArrayDecoder;
+use Blackprism\CouchbaseODM\Serializer\Encoder\ArrayEncoder;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -44,6 +45,7 @@ class SerializerFactory implements SerializerFactoryInterface, PropertyChangedLi
 
         $encoders[] = new JsonEncoder();
         $encoders[] = new ArrayDecoder();
+        $encoders[] = new ArrayEncoder();
 
         $this->serializers[$identifier] = new Serializer($normalizers, $encoders);
 
