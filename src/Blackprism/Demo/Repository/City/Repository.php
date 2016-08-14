@@ -55,12 +55,15 @@ class Repository implements SerializerFactoryAwareInterface, ConnectionAwareInte
 
     /**
      * @param DocumentId $documentId
+     * @param string $type
      *
      * @return mixed
      */
-    public function get(DocumentId $documentId)
+    public function get(DocumentId $documentId, string $type = Denormalizer\MergePaths::DENORMALIZATION_TYPE_OUTPUT)
     {
-        return $this->getBucket()->get($documentId);
+        $metaDoc = $this->getBucket()->get($documentId);
+
+        return $this->getSerializer()->deserialize($metaDoc->value(), $type, 'json');
     }
 
     public function getCitiesWithMayor()

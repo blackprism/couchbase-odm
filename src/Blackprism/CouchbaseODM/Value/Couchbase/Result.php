@@ -42,30 +42,19 @@ final class Result
     /**
      * Result constructor.
      *
-     * @param array $rows
-     * @param string $status
-     * @param float $elapsedTime
-     * @param float $executionTime
-     * @param int $resultCount
-     * @param int $resultSize
+     * @param \stdClass $couchbaseResult
      */
-    public function __construct(
-        array $rows,
-        string $status,
-        float $elapsedTime,
-        float $executionTime,
-        int $resultCount,
-        int $resultSize
-    ) {
-        $this->rows = $rows;
-
-        if ($status === 'success') {
+    public function __construct($couchbaseResult)
+    {
+        if ($couchbaseResult->status === 'success') {
             $this->success = true;
         }
-        $this->elapsedTime = $elapsedTime;
-        $this->executionTime = $executionTime;
-        $this->resultCount = $resultCount;
-        $this->resultSize = $resultSize;
+
+        $this->rows = $couchbaseResult->rows;
+        $this->elapsedTime = (float) $couchbaseResult->metrics['elapsedTime'];
+        $this->executionTime = (float) $couchbaseResult->metrics['executionTime'];
+        $this->resultCount = $couchbaseResult->metrics['resultCount'];
+        $this->resultSize = $couchbaseResult->metrics['resultSize'];
     }
 
     /**

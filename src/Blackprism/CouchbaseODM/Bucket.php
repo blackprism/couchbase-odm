@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM;
 
+use Blackprism\CouchbaseODM\Value\Couchbase\MetaDoc;
 use Blackprism\CouchbaseODM\Value\Couchbase\Result;
 use Blackprism\CouchbaseODM\Value\DocumentId;
 
@@ -28,28 +29,13 @@ final class Bucket
     /**
      * @param DocumentId $id
      *
-     * @return mixed
+     * @return MetaDoc
      */
-    public function get(DocumentId $id)
+    public function get(DocumentId $id): MetaDoc
     {
-        /* @TODO need to be rewrite
         $couchbaseMetaDoc = $this->bucket->get($id->value());
 
-        return new MetaDoc(
-            $couchbaseResult->rows,
-            $couchbaseResult->status,
-            (float) $couchbaseResult->metrics['elapsedTime'],
-            (float) $couchbaseResult->metrics['executionTime'],
-            $couchbaseResult->metrics['resultCount'],
-            $couchbaseResult->metrics['resultSize']
-        );
-
-        var_dump($couchbaseMetaDoc);
-        die;
-        $document = $couchbaseMetaDoc->value;
-
-        return $this->deserializer->deserialize($document);
-        */
+        return new MetaDoc($couchbaseMetaDoc);
     }
 
     /**
@@ -57,21 +43,20 @@ final class Bucket
      *
      * @return Result
      */
-    public function query(string $query)
+    public function query(string $query): Result
     {
         $couchbaseResult = $this->bucket->query(\CouchbaseN1qlQuery::fromString($query), true);
 
-        return new Result(
-            $couchbaseResult->rows,
-            $couchbaseResult->status,
-            (float) $couchbaseResult->metrics['elapsedTime'],
-            (float) $couchbaseResult->metrics['executionTime'],
-            $couchbaseResult->metrics['resultCount'],
-            $couchbaseResult->metrics['resultSize']
-        );
+        return new Result($couchbaseResult);
     }
 
-    private function flatArray(array $values, $keyPrefix = '')
+    /**
+     * @param array $values
+     * @param string $keyPrefix
+     *
+     * @return array
+     */
+    private function flatArray(array $values, string $keyPrefix = ''): array
     {
         $data = [];
         foreach ($values as $key => $value) {

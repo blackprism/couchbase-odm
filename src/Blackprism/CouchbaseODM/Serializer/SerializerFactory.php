@@ -40,6 +40,7 @@ class SerializerFactory implements SerializerFactoryInterface, PropertyChangedLi
         $normalizers = $this->initNormalizers($normalizers);
         $normalizers = $this->addCollectionIfNotFound($normalizers);
         $normalizers = $this->addMergePathsIfNotFound($normalizers);
+        $normalizers = $this->addRawIfNotFound($normalizers);
 
         $encoders[] = new JsonEncoder();
         $encoders[] = new ArrayDecoder();
@@ -104,6 +105,28 @@ class SerializerFactory implements SerializerFactoryInterface, PropertyChangedLi
 
         if ($mergePathsFound === false) {
             $normalizers[] = new Denormalizer\MergePaths();
+        }
+
+        return $normalizers;
+    }
+
+    /**
+     * @param array $normalizers
+     *
+     * @return array
+     */
+    private function addRawIfNotFound(array $normalizers)
+    {
+        $valueFound = false;
+
+        foreach ($normalizers as $normalizer) {
+            if ($normalizer instanceof Denormalizer\Raw) {
+                $valueFound = true;
+            }
+        }
+
+        if ($valueFound === false) {
+            $normalizers[] = new Denormalizer\Raw();
         }
 
         return $normalizers;

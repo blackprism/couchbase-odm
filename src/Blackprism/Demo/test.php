@@ -54,6 +54,8 @@ echo "RepositoryFactory created\n";
 
 $cityRepository = $repositoryFactory->get(new ClassName(City\Repository::class));
 
+var_dump($cityRepository->get(new DocumentId('test-counter')));
+var_dump($cityRepository->get(new DocumentId('odwalla-juice1')));
 var_dump($cityRepository->get(new DocumentId('city-1')));
 
 echo "Ask cities with mayor\n";

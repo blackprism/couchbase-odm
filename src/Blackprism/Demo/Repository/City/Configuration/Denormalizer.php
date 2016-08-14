@@ -30,20 +30,26 @@ class Denormalizer implements DenormalizerAwareInterface, DenormalizerInterface,
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        $city = new Model\City();
-        $city->setId($data['city']['id']);
-        $city->setName($data['city']['name']);
-        $city->setMayorId($data['city']['mayorId']);
+        if (isset($data['city']) === true) {
+            $rawCity = $data['city'];
+        } else {
+            $rawCity = $data;
+        }
 
-        if (isset($data['city']['country']) === true) {
+        $city = new Model\City();
+        $city->setId($rawCity['id'] ?? '');
+        $city->setName($rawCity['name'] ?? '');
+        $city->setMayorId($rawCity['mayorId'] ?? '');
+
+        if (isset($rawCity['country']) === true) {
             /** @var Model\Country $country */
-            $country = $this->denormalizer->denormalize($data['city']['country'], Country\Configuration\Denormalizer::class, $format);
+            $country = $this->denormalizer->denormalize($rawCity['country'], Country\Configuration\Denormalizer::class, $format);
             $city->countryIs($country);
         }
 
-        if (isset($data['city']['mayor']) === true) {
+        if (isset($rawCity['mayor']) === true) {
             /** @var Model\Mayor $mayor */
-            $mayor = $this->denormalizer->denormalize($data['city']['mayor'], Mayor\Configuration\Denormalizer::class, $format);
+            $mayor = $this->denormalizer->denormalize($rawCity['mayor'], Mayor\Configuration\Denormalizer::class, $format);
             $city->setMayor($mayor);
         }
 
@@ -58,6 +64,10 @@ class Denormalizer implements DenormalizerAwareInterface, DenormalizerInterface,
     {
         if ($type !== MergePaths::DENORMALIZATION_TYPE_OUTPUT) {
             return false;
+        }
+
+        if (isset($data['type']) === true && $data['type'] === 'city') {
+            return true;
         }
 
         if (isset($data['city']['type']) === true && $data['city']['type'] === 'city') {
