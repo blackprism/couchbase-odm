@@ -24,7 +24,7 @@ class MergePaths implements DenormalizerAwareInterface, DenormalizerInterface
     private $type;
 
     /**
-     * Collection constructor.
+     * MergePaths constructor.
      *
      * @param string $type type to use for output of denormalize
      */

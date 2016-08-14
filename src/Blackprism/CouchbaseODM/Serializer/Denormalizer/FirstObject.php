@@ -24,7 +24,7 @@ class FirstObject implements DenormalizerAwareInterface, DenormalizerInterface
     private $type;
 
     /**
-     * Collection constructor.
+     * FirstObject constructor.
      *
      * @param string $type type to use for output of denormalize
      */
