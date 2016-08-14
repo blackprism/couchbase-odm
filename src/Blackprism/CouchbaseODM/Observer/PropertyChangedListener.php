@@ -22,8 +22,12 @@ class PropertyChangedListener implements PropertyChangedListenerInterface
      *
      * @return void
      */
-    public function propertyChanged(NotifyPropertyChangedInterface $document, string $propertyName, $oldValue, $newValue)
-    {
+    public function propertyChanged(
+        NotifyPropertyChangedInterface $document,
+        string $propertyName,
+        $oldValue,
+        $newValue
+    ) {
         if ($oldValue === $newValue) {
             return;
         }
@@ -37,6 +41,27 @@ class PropertyChangedListener implements PropertyChangedListenerInterface
         }
 
         $this->documents[$document->{self::PROPERTY_NAME}][$propertyName][1] = $newValue;
+    }
+
+    /**
+     * @param NotifyPropertyChangedInterface $document
+     *
+     * @return array
+     */
+    public function getPropertiesChanged(NotifyPropertyChangedInterface $document): array
+    {
+        if (isset($document->{self::PROPERTY_NAME}) === false) {
+            return [];
+        }
+
+        $properties = [];
+        foreach ($this->documents[$document->{self::PROPERTY_NAME}] as $propertyName => $propertyValues) {
+            if ($propertyValues[0] !== $propertyValues[1]) {
+                $properties[] = $propertyName;
+            }
+        }
+
+        return $properties;
     }
 
     /**
