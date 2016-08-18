@@ -15,9 +15,7 @@ final class MetaDoc
     private $value;
 
     /**
-     * @TODO unknown type https://forums.couchbase.com/t/couchbasemetadoc-properties-type/9542
-     *
-     * @var string
+     * @var \CouchbaseException|null
      */
     private $error;
 
@@ -32,9 +30,7 @@ final class MetaDoc
     private $cas;
 
     /**
-     * @TODO unknown type https://forums.couchbase.com/t/couchbasemetadoc-properties-type/9542
-     *
-     * @var string|null
+     * @var \CouchbaseMutationToken|null
      */
     private $token;
 
@@ -50,7 +46,6 @@ final class MetaDoc
         $this->flags = $couchbaseMetaDoc->flags;
         $this->cas = $couchbaseMetaDoc->cas;
         $this->token = $couchbaseMetaDoc->token;
-
     }
 
     /**
@@ -62,9 +57,9 @@ final class MetaDoc
     }
 
     /**
-     * @return string
+     * @return \CouchbaseException|null
      */
-    public function error(): string
+    public function error()
     {
         return $this->error;
     }
@@ -86,7 +81,7 @@ final class MetaDoc
     }
 
     /**
-     * @return string|null
+     * @return \CouchbaseMutationToken|null
      */
     public function token()
     {
