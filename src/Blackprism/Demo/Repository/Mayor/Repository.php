@@ -13,9 +13,8 @@ use Blackprism\Demo\Repository\Country;
 use Blackprism\Demo\Repository\Mayor;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class Repository implements SerializerFactoryAwareInterface, ConnectionAwareInterface
+class Repository implements ConnectionAwareInterface
 {
-    use SerializerFactoryAwareTrait;
     use ConnectionAwareTrait;
 
     const BUCKET_NAME = 'odm-test';

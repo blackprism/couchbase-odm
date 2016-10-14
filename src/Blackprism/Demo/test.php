@@ -4,23 +4,24 @@ namespace Blackprism\Demo;
 
 require_once '../../../vendor/autoload.php';
 
+use Blackprism\CouchbaseODM\Connection;
+use Blackprism\CouchbaseODM\Observer\PropertyChangedListener;
+use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareInterface;
+use Blackprism\CouchbaseODM\Repository\RepositoryFactory;
+use Blackprism\CouchbaseODM\Serializer\SerializerFactory;
+use Blackprism\CouchbaseODM\Value\ClassName;
+use Blackprism\CouchbaseODM\Value\Dsn;
 use Blackprism\Demo\Model;
 use Blackprism\Demo\Repository\City;
 use Blackprism\Demo\Repository\Country;
 use Blackprism\Demo\Repository\Mayor;
-use Blackprism\CouchbaseODM\Connection;
-use Blackprism\CouchbaseODM\Observer\PropertyChangedListener;
-use Blackprism\CouchbaseODM\Repository\RepositoryFactory;
-use Blackprism\CouchbaseODM\Serializer\SerializerFactory;
-use Blackprism\CouchbaseODM\Value\ClassName;
-use Blackprism\CouchbaseODM\Value\DocumentId;
-use Blackprism\CouchbaseODM\Value\Dsn;
 use Blackprism\Serializer\Json\Serialize;
 
 ini_set('xdebug.var_display_max_children', -1);
 ini_set('xdebug.var_display_max_depth', -1);
 
-//
+// vagrant & vagrant password
+// root & khew3btQ (random local password, so i can commit it :p)
 
 //$result = $bucket->query('select * from `odm-test` as city limit 1');
 //var_dump($bucket->deserializeCollection($result));
@@ -43,61 +44,87 @@ echo "Connection defined\n";
 $propertyChangedListener = new PropertyChangedListener();
 echo "PropertyChangedListener created\n";
 
-$serializerFactory = new SerializerFactory();
-echo "SerializerFactory created\n";
-
-$serializerFactory->propertyChangedListenerIs($propertyChangedListener);
-echo "Injected PropertyChangedListener in serializerFactory\n";
-
-$repositoryFactory = new RepositoryFactory($connection, $serializerFactory);
+$repositoryFactory = new RepositoryFactory($connection, $propertyChangedListener);
 echo "RepositoryFactory created\n";
+
+if ($repositoryFactory instanceof PropertyChangedListenerAwareInterface) {
+    $repositoryFactory->propertyChangedListenerIs($propertyChangedListener);
+}
 
 /** @var City\Repository $cityRepository */
 $cityRepository = $repositoryFactory->get(new ClassName(City\Repository::class));
+//
+//try {
+//    var_dump($cityRepository->get(new DocumentId('test-counter')));
+//} catch (NoSuchKey $exception) {
 
-var_dump($cityRepository->get(new DocumentId('test-counter')));
-var_dump($cityRepository->get(new DocumentId('odwalla-juice1')));
-var_dump($cityRepository->get(new DocumentId('city-1')));
-
+//var_dump($cityRepository->get('city-1'));
+//var_dump($cityRepository->getJuice());
+//die;
+//echo "Ask one juice as a city\n";
+//$city = $cityRepository->getJuiceAsCity();
+//var_dump($city);
+//die;
+//echo "Ask one city with mayor\n";
+//$city = $cityRepository->getCityWithMayor('city-internal-4');
+//var_dump($city);
+//die;
 echo "Ask cities with mayor\n";
 $cities = $cityRepository->getCitiesWithMayor();
-$cities[2]->setName('Paris (edited)');
-$cities[2]->getCountry()->setName('France (edited)');
-$mayor = $cities[2]->getMayor();
-$mayor->setFirstname('Anne (edited)');
-$cities[2]->setMayor($mayor);
 var_dump($cities);
-var_dump($cities[2]);
+//die;
+$cities[2]->setName('Paris (' . uniqid('edited-') . ')');
+$country = $cities[2]->getCountry();
+$country->setName('France (' . uniqid('edited-') . ')');
+$cities[2]->countryIs($country);
+$mayor = $cities[2]->getMayor();
+$mayor->setFirstname('Anne (' . uniqid('edited-') . ')');
+$cities[2]->setMayor($mayor);
+//var_dump($cities);
+//var_dump($cities[2]);
+$documentsToUpdate = $cityRepository->getSerializer()->serialize($cities[2], 'array');
+var_dump($documentsToUpdate);
+//
+//$cityRepository->save($cities[2]);
+//var_dump($cities[2], $documentsToUpdate);
+//
+//die;
 
-$serializer = $cityRepository->getSerializer();
-$documentsToUpdate = $serializer->serialize($cities[2], 'array');
-$cityRepository->save($documentsToUpdate);
-var_dump($cities[2], $documentsToUpdate);
-
-die;
 
 
 $mayorRepository = $repositoryFactory->get(new ClassName(Mayor\Repository::class));
 $mayorRepository->connectionIs($connection);
-var_dump($mayorRepository->getMayors());
+
+//try {
+//    var_dump($mayorRepository->getMayors());
+//} catch (\Exception $e) {
+//    var_dump($e);
+//}
 
 $france = new Model\Country();
-$france->setName('France');
+$france->setName('France (yeah this one)');
 
 $mayorLuxiol = new Model\Mayor();
-$mayorLuxiol->setId('mayor-2');
+//$mayorLuxiol->setId('mayor-2');
 $mayorLuxiol->setFirstname('Christophe');
 $mayorLuxiol->setLastname('Colin');
 
 $luxiol = new Model\City();
-$luxiol->setId('city-3');
+//$luxiol->setId('city-3');
 $luxiol->setName('Luxiol');
 $luxiol->setMayorId('mayor-2');
 $luxiol->countryIs($france);
 $luxiol->setMayor($mayorLuxiol);
 
+//var_dump($luxiol);
+//$cityRepository->getBucket()->save($json);
+$documentsToUpdate = $cityRepository->getSerializer()->serialize($luxiol, 'array');
+var_dump($documentsToUpdate);
+die;
+
+
 $mayorPalaiseau = new Model\Mayor();
-$mayorPalaiseau->setId('mayor-1');
+//$mayorPalaiseau->setId('mayor-1');
 $mayorPalaiseau->setFirstname('Grégoire');
 $mayorPalaiseau->setLastname('Lasteyrie');
 
@@ -106,7 +133,7 @@ $geo->setLat(37.7825);
 $geo->setLon(-122.393);
 
 $palaiseau = new Model\City();
-$luxiol->setId('city-3');
+//$palaiseau->setId('city-3');
 $palaiseau->setName('Palaiseau');
 $palaiseau->setMayorId('mayor-1');
 $palaiseau->countryIs(clone $france);
@@ -114,14 +141,18 @@ $palaiseau->setMayor($mayorPalaiseau);
 $palaiseau->setGeo($geo);
 
 $cities = [['city' => $luxiol], ['city' => $palaiseau]];
-$cities = ['city' => $luxiol, 'city' => $palaiseau];
+$cities = [$luxiol, $palaiseau];
 
-var_export($cities);
+//var_export($cities);
 $serializer = $cityRepository->getSerializer();
 
-$json = $serializer->serialize($palaiseau, 'json');
 
-var_dump($json);
+$json = $serializer->serialize($cities, 'json');
+
+var_dump($json, json_decode($json, true));
+
+die;
+$cityRepository->getBucket()->save($json);
 
 exit;
 system("echo '" . $serializer->serializeCollection($cities) . "' | jsonpp");

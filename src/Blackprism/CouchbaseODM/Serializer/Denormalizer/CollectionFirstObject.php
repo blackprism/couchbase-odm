@@ -7,9 +7,9 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 /**
- * FirstObject
+ * CollectionFirstObject
  */
-class FirstObject implements DenormalizerAwareInterface, DenormalizerInterface
+class CollectionFirstObject implements DenormalizerAwareInterface, DenormalizerInterface
 {
 
     use DenormalizerAwareTrait;
@@ -22,7 +22,7 @@ class FirstObject implements DenormalizerAwareInterface, DenormalizerInterface
     private $type;
 
     /**
-     * FirstObject constructor.
+     * Collection constructor.
      *
      * @param string $type type to use for output of denormalize
      */
@@ -43,13 +43,12 @@ class FirstObject implements DenormalizerAwareInterface, DenormalizerInterface
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        if ($data === []) {
-            return [];
+        foreach ($data as &$value) {
+            $value = $this->denormalizer->denormalize($value, $this->type, $format, $context);
+            $value = reset($value);
         }
 
-        $data = $this->denormalizer->denormalize(reset($data), $this->type, $format, $context);
-
-        return reset($data);
+        return $data;
     }
 
     /**

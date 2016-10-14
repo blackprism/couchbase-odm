@@ -40,6 +40,11 @@ class Raw implements DenormalizerAwareInterface, DenormalizerInterface
      */
     public function supportsDenormalization($data, $type, $format = null)
     {
-        return true;
+        if ($type === self::class) {
+            echo self::class . "\n";
+            return true;
+        }
+
+        return false;
     }
 }

@@ -7,21 +7,22 @@ namespace Blackprism\CouchbaseODM\Observer;
  */
 trait NotifyPropertyChangedTrait
 {
-    /**
-     * @var PropertyChangedListenerInterface[]
-     */
-    protected $listeners = array();
+
+    private $track = false;
+    private $properties = array();
+
+    // @TODO revoit le nom de la méthode/propriété
+    public function track()
+    {
+        $this->track = true;
+    }
 
     /**
-     * Add an observer to the current object.
-     *
-     * @param PropertyChangedListenerInterface $listener
-     *
-     * @return void
+     * @return bool
      */
-    public function addPropertyChangedListener(PropertyChangedListenerInterface $listener)
+    public function isTracked()
     {
-        $this->listeners[] = $listener;
+        return $this->track;
     }
 
     /**
@@ -33,14 +34,18 @@ trait NotifyPropertyChangedTrait
      */
     private function propertyChanged(string $propertyName, $oldValue, $newValue)
     {
-        if ($oldValue === $newValue) {
+        if ($this->track === false) {
             return;
         }
 
-        foreach ($this->listeners as $listener) {
-            if ($this instanceof NotifyPropertyChangedInterface) {
-                $listener->propertyChanged($this, $propertyName, $oldValue, $newValue);
-            }
-        }
+        $this->properties[$propertyName] = 1;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPropertiesChanged()
+    {
+        return $this->properties;
     }
 }

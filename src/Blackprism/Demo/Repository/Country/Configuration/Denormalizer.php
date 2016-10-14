@@ -21,16 +21,16 @@ class Denormalizer implements DenormalizerAwareInterface, DenormalizerInterface,
         $country->setName($data['name']);
 
         if ($country instanceof NotifyPropertyChangedInterface) {
-            $country->addPropertyChangedListener($this->propertyChangedListener);
+            $country->track();
         }
-
 
         return $country;
     }
 
     public function supportsDenormalization($data, $type, $format = null)
     {
-        if ($type === self::class) {
+        if ($type === 'country') {
+            echo self::class . "\n";
             return true;
         }
 

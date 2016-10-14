@@ -1,9 +1,140 @@
 <?php
 
+use Blackprism\Demo\Model\City;
+use Blackprism\Demo\Model\Country;
+use Blackprism\Demo\Model\Mayor;
+
 ini_set('xdebug.var_display_max_children', -1);
 ini_set('xdebug.var_display_max_depth', -1);
 
 require_once '../../../vendor/autoload.php';
+
+$normalizers = [
+    new City(),
+    new Country(),
+    new Mayor(),
+    new City(),
+    new Country(),
+    new Mayor(),
+    new City(),
+    new Country(),
+    new Mayor(),
+    new City(),
+    new Country(),
+    new Mayor()
+];
+
+$start = microtime(true);
+for ($i = 0; $i < 10000; $i++) {
+    $collectionFound = false;
+    $mergePathsFound = false;
+    foreach ($normalizers as $normalizer) {
+        if ($normalizer instanceof PropertyChangedListenerAwareInterface) {
+            $normalizer->propertyChangedListenerIs($this->propertyChangedListener);
+        }
+
+        if ($normalizer instanceof Denormalizer\Collection) {
+            $collectionFound = true;
+        }
+
+        if ($normalizer instanceof Denormalizer\MergePaths) {
+            $mergePathsFound = true;
+        }
+    }
+}
+$end = microtime(true);
+
+echo ($end - $start) . "\n";
+
+
+$start = microtime(true);
+for ($i = 0; $i < 10000; $i++) {
+    foreach ($normalizers as $normalizer) {
+        if ($normalizer instanceof PropertyChangedListenerAwareInterface) {
+            $normalizer->propertyChangedListenerIs($this->propertyChangedListener);
+        }
+    }
+
+    $collectionFound = false;
+    foreach ($normalizers as $normalizer) {
+        if ($normalizer instanceof Denormalizer\Collection) {
+            $collectionFound = true;
+        }
+    }
+
+    $mergePathsFound = false;
+    foreach ($normalizers as $normalizer) {
+        if ($normalizer instanceof Denormalizer\MergePaths) {
+            $mergePathsFound = true;
+        }
+    }
+}
+$end = microtime(true);
+
+echo ($end - $start) . "\n";
+
+
+$start = microtime(true);
+$a = function ($normalizer) use ($collectionFound) {
+    if ($normalizer instanceof Denormalizer\Collection) {
+        $collectionFound = true;
+    }
+};
+
+$b = function ($normalizer) use ($mergePathsFound) {
+    if ($normalizer instanceof Denormalizer\MergePaths) {
+        $mergePathsFound = true;
+    }
+};
+
+for ($i = 0; $i < 10000; $i++) {
+    foreach ($normalizers as $normalizer) {
+        if ($normalizer instanceof PropertyChangedListenerAwareInterface) {
+            $normalizer->propertyChangedListenerIs($this->propertyChangedListener);
+        }
+    }
+
+    $collectionFound = false;
+    array_walk($normalizers, $a);
+
+    $mergePathsFound = false;
+    array_walk($normalizers, $b);
+}
+$end = microtime(true);
+
+echo ($end - $start) . "\n";
+exit;
+
+
+
+
+$bouh = new Bouh();
+$bouh->setId(8);
+$spl = spl_object_hash($bouh);
+unset($bouh);
+$bouh2 = new Bouh();
+$spl2 = spl_object_hash($bouh2);
+var_dump($spl === $spl2, $spl, $spl2);
+die;
+
+$bouh2 = new Bouh2();
+$start = microtime(true);
+for ($i = 0; $i < 10000; $i++) {
+    $bouh instanceof Zoum;
+}
+$end = microtime(true);
+
+echo ($end - $start) . "\n";
+
+$start = microtime(true);
+for ($i = 0; $i < 10000; $i++) {
+    $bouh2 instanceof Zoum;
+}
+$end = microtime(true);
+
+echo ($end - $start) . "\n";
+exit;
+
 
 $data = [[
     'city.mayor.country' => [

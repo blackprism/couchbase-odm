@@ -2,6 +2,7 @@
 
 namespace Blackprism\CouchbaseODM\Serializer\Denormalizer;
 
+use mageekguy\atoum\asserters\iterator;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -13,8 +14,6 @@ class MergePaths implements DenormalizerAwareInterface, DenormalizerInterface
 {
 
     use DenormalizerAwareTrait;
-
-    const DENORMALIZATION_TYPE_OUTPUT = self::class . '.output';
 
     /**
      * Type to use for output of denormalize.
@@ -28,7 +27,7 @@ class MergePaths implements DenormalizerAwareInterface, DenormalizerInterface
      *
      * @param string $type type to use for output of denormalize
      */
-    public function __construct($type = self::DENORMALIZATION_TYPE_OUTPUT)
+    public function __construct(string $type)
     {
         $this->type = $type;
     }
@@ -45,8 +44,11 @@ class MergePaths implements DenormalizerAwareInterface, DenormalizerInterface
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        $data = $this->merge($data);
-        $data = $this->denormalizer->denormalize($data, $this->type, 'json');
+        if (is_array($data) === true || $data instanceof \Traversable) {
+            $data = $this->merge($data);
+        }
+
+        $data = $this->denormalizer->denormalize($data, $this->type, $format, $context);
 
         return $data;
     }
@@ -58,7 +60,7 @@ class MergePaths implements DenormalizerAwareInterface, DenormalizerInterface
      *
      * @return mixed
      */
-    private function merge($values)
+    private function merge(array $values)
     {
         foreach ($values as $key => $value) {
             // Composed key
@@ -94,6 +96,7 @@ class MergePaths implements DenormalizerAwareInterface, DenormalizerInterface
     public function supportsDenormalization($data, $type, $format = null)
     {
         if ($type === self::class) {
+            echo self::class . "\n";
             return true;
         }
 

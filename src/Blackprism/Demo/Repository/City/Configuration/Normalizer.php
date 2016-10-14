@@ -2,8 +2,10 @@
 
 namespace Blackprism\Demo\Repository\City\Configuration;
 
+use Blackprism\CouchbaseODM\Observer\NotifyPropertyChangedInterface;
 use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareInterface;
 use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareTrait;
+use Blackprism\CouchbaseODM\Serializer\Normalizer\Composite;
 use Blackprism\Demo\Model;
 use Blackprism\Demo\Repository\Country;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
@@ -15,13 +17,29 @@ class Normalizer implements NormalizerAwareInterface, NormalizerInterface, Prope
     use NormalizerAwareTrait;
     use PropertyChangedListenerAwareTrait;
 
-    private $mapping = [
-        'name' => 'getName',
-        'mayorId' => 'getMayorId',
-        'country' => 'getCountry'
+    private $context = [
+        Composite::CONFIG_MAPPING => [
+            'name' => [
+                Composite::CONFIG_MAPPING_GETTER    => 'getName'
+            ],
+            'mayorId' => [
+                Composite::CONFIG_MAPPING_GETTER    => 'getMayorId'
+            ],
+            'mayor' => [
+                Composite::CONFIG_MAPPING_GETTER     => 'getMayor',
+                Composite::CONFIG_MAPPING_KEY_LINKED => 'mayorId',
+                Composite::CONFIG_MAPPING_NORMALIZE  => true,
+                Composite::CONFIG_MAPPING_EXTERNAL   => true
+            ],
+            'country' => [
+                Composite::CONFIG_MAPPING_GETTER    => 'getCountry',
+                Composite::CONFIG_MAPPING_NORMALIZE => true
+            ]
+        ]
     ];
 
     /**
+     *
      * Normalizes an object into a set of arrays/scalars.
      *
      * @param object $object  object to normalize
@@ -32,34 +50,12 @@ class Normalizer implements NormalizerAwareInterface, NormalizerInterface, Prope
      */
     public function normalize($object, $format = null, array $context = array())
     {
-        $city = $object;
-        $cityArray = [];
-
-        $properties = $this->propertyChangedListener->getPropertiesChanged($object);
-
-        foreach ($properties as $property) {
-            if (isset($this->mapping[$property]) === true) {}
-            $cityArray[$property] = $city->{$this->mapping[$property]}();
-        }
-
-        $cityArray['country'] = $this->normalizer->normalize($city->getCountry(), $format);
-        $mayorFinal = $this->normalizer->normalize($city->getMayor(), $format);
-
-        if ($cityArray !== []) {
-            $cityFinal = [
-                $city->getId() => $cityArray
-            ];
-        } else {
-            $cityFinal = $cityArray;
-        }
-
-        return array_merge($cityFinal, $mayorFinal);
+        return $this->normalizer->normalize($object, Composite::class, $this->context);
     }
 
     public function supportsNormalization($data, $format = null)
     {
-        if (is_object($data) === true && get_class($data) === Model\City::class
-            || is_array($data) === true && get_class($data['city']) === Model\City::class) {
+        if (is_object($data) === true && get_class($data) === Model\City::class) {
             return true;
         }
 

@@ -7,12 +7,5 @@ namespace Blackprism\CouchbaseODM\Observer;
  */
 interface NotifyPropertyChangedInterface
 {
-    /**
-     * Add an observer to the current object.
-     *
-     * @param PropertyChangedListenerInterface $listener
-     *
-     * @return mixed
-     */
-    public function addPropertyChangedListener(PropertyChangedListenerInterface $listener);
+    public function track();
 }

@@ -4,6 +4,8 @@ namespace Blackprism\CouchbaseODM\Repository;
 
 use Blackprism\CouchbaseODM\Connection\ConnectionAwareInterface;
 use Blackprism\CouchbaseODM\Connection\ConnectionInterface;
+use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareInterface;
+use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareTrait;
 use Blackprism\CouchbaseODM\Serializer\SerializerFactoryAwareInterface;
 use Blackprism\CouchbaseODM\Serializer\SerializerFactoryInterface;
 use Blackprism\CouchbaseODM\Value\ClassName;
@@ -11,17 +13,15 @@ use Blackprism\CouchbaseODM\Value\ClassName;
 /**
  * RepositoryFactory
  */
-class RepositoryFactory
+final class RepositoryFactory implements PropertyChangedListenerAwareInterface
 {
+
+    use PropertyChangedListenerAwareTrait;
+
     /**
      * @var ConnectionInterface
      */
     private $connection;
-
-    /**
-     * @var SerializerFactoryInterface
-     */
-    private $serializerFactory;
 
     /**
      * @var object[]
@@ -32,12 +32,10 @@ class RepositoryFactory
      * RepositoryFactory constructor.
      *
      * @param ConnectionInterface $connection
-     * @param SerializerFactoryInterface $serializerFactory
      */
-    public function __construct(ConnectionInterface $connection, SerializerFactoryInterface $serializerFactory)
+    public function __construct(ConnectionInterface $connection)
     {
         $this->connection = $connection;
-        $this->serializerFactory = $serializerFactory;
     }
 
     /**
@@ -58,8 +56,8 @@ class RepositoryFactory
             $repository->connectionIs($this->connection);
         }
 
-        if ($repository instanceof SerializerFactoryAwareInterface) {
-            $repository->serializerFactoryIs($this->serializerFactory);
+        if ($repository instanceof PropertyChangedListenerAwareInterface) {
+            $repository->propertyChangedListenerIs($this->propertyChangedListener);
         }
 
         $this->repositories[$className->value()] = $repository;

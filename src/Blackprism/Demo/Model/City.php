@@ -49,7 +49,11 @@ class City implements NotifyPropertyChangedInterface
 
     public function getCountry()
     {
-        return $this->country;
+        if ($this->country === null) {
+            return null;
+        }
+
+        return clone $this->country;
     }
 
     public function setGeo(Geo $geo)
@@ -60,16 +64,28 @@ class City implements NotifyPropertyChangedInterface
 
     public function getGeo()
     {
+        if ($this->geo === null) {
+            return null;
+        }
+
         return clone $this->geo;
     }
 
     public function setMayor(Mayor $mayor)
     {
+        $this->propertyChanged('mayor', $this->mayor, $mayor);
         $this->mayor = $mayor;
+        if ($mayor->getId() !== null) {
+            $this->setMayorId($mayor->getId());
+        }
     }
 
     public function getMayor()
     {
+        if ($this->mayor === null) {
+            return null;
+        }
+
         return clone $this->mayor;
     }
 

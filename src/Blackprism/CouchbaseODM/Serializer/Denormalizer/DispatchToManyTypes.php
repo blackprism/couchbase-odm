@@ -7,9 +7,10 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 /**
- * FirstObject
+ * DispatchToManyTypes
+ * @TODO revoir le nom pour quelque chose de plus générique, puisque c'est aussi générique qu'un array_callback
  */
-class FirstObject implements DenormalizerAwareInterface, DenormalizerInterface
+class DispatchToManyTypes implements DenormalizerAwareInterface, DenormalizerInterface
 {
 
     use DenormalizerAwareTrait;
@@ -22,11 +23,11 @@ class FirstObject implements DenormalizerAwareInterface, DenormalizerInterface
     private $type;
 
     /**
-     * FirstObject constructor.
+     * DispatchToManyTypes constructor.
      *
      * @param string $type type to use for output of denormalize
      */
-    public function __construct($type = MergePaths::class)
+    public function __construct($type = DispatchToType::class)
     {
         $this->type = $type;
     }
@@ -43,13 +44,11 @@ class FirstObject implements DenormalizerAwareInterface, DenormalizerInterface
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        if ($data === []) {
-            return [];
+        foreach ($data as &$element) {
+            $element = $this->denormalizer->denormalize($element, $this->type, $format, $context);
         }
 
-        $data = $this->denormalizer->denormalize(reset($data), $this->type, $format, $context);
-
-        return reset($data);
+        return $data;
     }
 
     /**

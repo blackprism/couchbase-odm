@@ -22,9 +22,8 @@ class Denormalizer implements DenormalizerAwareInterface, DenormalizerInterface,
         $mayor->setFirstname($data['firstname']);
         $mayor->setLastname($data['lastname']);
 
-
         if ($mayor instanceof NotifyPropertyChangedInterface) {
-            $mayor->addPropertyChangedListener($this->propertyChangedListener);
+            $mayor->track();
         }
 
         return $mayor;
@@ -32,7 +31,8 @@ class Denormalizer implements DenormalizerAwareInterface, DenormalizerInterface,
 
     public function supportsDenormalization($data, $type, $format = null)
     {
-        if (isset($data['type']) === true && $data['type'] === 'mayor') {
+        if ($type === 'mayor') {
+            echo self::class . "\n";
             return true;
         }
 

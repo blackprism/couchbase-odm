@@ -4,10 +4,12 @@ namespace Blackprism\CouchbaseODM\Observer;
 
 /**
  * PropertyChangedListener
+ * @TODO à cause du isNew on se rend vraiment compte que cette classe est plus un UOW, il faudra la renommer
  */
 class PropertyChangedListener implements PropertyChangedListenerInterface
 {
 
+    // @TODO on a plus besoin d'un uuid vu que les metas de changements sont stockées dans chaque objet
     const PROPERTY_NAME = 'couchbaseODM_UUID';
 
     private $documents = []; /* @TODO private, protected ? */
@@ -44,6 +46,22 @@ class PropertyChangedListener implements PropertyChangedListenerInterface
     }
 
     /**
+     * @TODO à ajouter dans l'interface UOW
+     *
+     * @param NotifyPropertyChangedInterface $document
+     *
+     * @return bool
+     */
+    public function isNew(NotifyPropertyChangedInterface $document): bool
+    {
+        if (isset($document->{self::PROPERTY_NAME}) === true) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @param NotifyPropertyChangedInterface $document
      *
      * @return array
@@ -69,6 +87,6 @@ class PropertyChangedListener implements PropertyChangedListenerInterface
      */
     protected function generateUUID(): string /* @TODO private, protected ? */
     {
-        return uniqid(rand(), true);
+        return uniqid(mt_rand(), true);
     }
 }

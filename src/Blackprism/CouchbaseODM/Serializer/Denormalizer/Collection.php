@@ -44,7 +44,7 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
     public function denormalize($data, $class, $format = null, array $context = array())
     {
         foreach ($data as &$value) {
-            $value = $this->denormalizer->denormalize($value, $this->type, 'json');
+            $value = $this->denormalizer->denormalize($value, $this->type, $format, $context);
         }
 
         return $data;
@@ -62,6 +62,7 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
     public function supportsDenormalization($data, $type, $format = null)
     {
         if ($type === self::class) {
+            echo self::class . "\n";
             return true;
         }
 

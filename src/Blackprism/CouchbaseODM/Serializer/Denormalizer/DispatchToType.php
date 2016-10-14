@@ -7,9 +7,9 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 /**
- * FirstObject
+ * DispatchToType
  */
-class FirstObject implements DenormalizerAwareInterface, DenormalizerInterface
+class DispatchToType implements DenormalizerAwareInterface, DenormalizerInterface
 {
 
     use DenormalizerAwareTrait;
@@ -19,16 +19,33 @@ class FirstObject implements DenormalizerAwareInterface, DenormalizerInterface
      *
      * @var string
      */
-    private $type;
+    private $typeProperty = 'type';
 
     /**
-     * FirstObject constructor.
+     * Denormalizer to use for typeless.
      *
-     * @param string $type type to use for output of denormalize
+     * @var string
      */
-    public function __construct($type = MergePaths::class)
+    private $typelessDenormalizer = '';
+
+    /**
+     * @param string $type
+     *
+     * @return $this
+     */
+    public function typePropertyIs(string $type): self
     {
-        $this->type = $type;
+        $this->typeProperty = $type;
+
+        return $this;
+    }
+
+
+    public function denormalizeTypelessWith(string $denormalizer): self
+    {
+        $this->typelessDenormalizer = $denormalizer;
+
+        return $this;
     }
 
     /**
@@ -43,13 +60,13 @@ class FirstObject implements DenormalizerAwareInterface, DenormalizerInterface
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        if ($data === []) {
-            return [];
+        if (isset($data[$this->typeProperty]) === true) {
+            $class = $data[$this->typeProperty];
+        } else {
+            $class = $this->typelessDenormalizer;
         }
 
-        $data = $this->denormalizer->denormalize(reset($data), $this->type, $format, $context);
-
-        return reset($data);
+        return $this->denormalizer->denormalize($data, $class, $format, $context);
     }
 
     /**
