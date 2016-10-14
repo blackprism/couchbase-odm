@@ -41,15 +41,8 @@ $result = $bucket->query('select city.name as city, country.name as country from
 $connection = new Connection\Connection(new Dsn('couchbase://localhost'));
 echo "Connection defined\n";
 
-$propertyChangedListener = new PropertyChangedListener();
-echo "PropertyChangedListener created\n";
-
-$repositoryFactory = new RepositoryFactory($connection, $propertyChangedListener);
+$repositoryFactory = new RepositoryFactory($connection);
 echo "RepositoryFactory created\n";
-
-if ($repositoryFactory instanceof PropertyChangedListenerAwareInterface) {
-    $repositoryFactory->propertyChangedListenerIs($propertyChangedListener);
-}
 
 /** @var City\Repository $cityRepository */
 $cityRepository = $repositoryFactory->get(new ClassName(City\Repository::class));

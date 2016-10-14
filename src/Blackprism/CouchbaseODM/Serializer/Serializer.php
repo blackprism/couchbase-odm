@@ -2,22 +2,18 @@
 
 namespace Blackprism\CouchbaseODM\Serializer;
 
-use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareInterface;
-use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareTrait;
 use Blackprism\CouchbaseODM\Serializer\Denormalizer;
 use Blackprism\CouchbaseODM\Serializer\Encoder\ArrayDecoder;
 use Blackprism\CouchbaseODM\Serializer\Encoder\ArrayEncoder;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Serializer as SymfonySerializer;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * Serializer
  */
-final class Serializer implements SerializerInterface, PropertyChangedListenerAwareInterface
+final class Serializer implements SerializerInterface
 {
-
-    use PropertyChangedListenerAwareTrait;
 
     /**
      * @var array
@@ -70,7 +66,7 @@ final class Serializer implements SerializerInterface, PropertyChangedListenerAw
         $normalizers[Denormalizer\Raw::class]                   = new Denormalizer\Raw();
         $normalizers[Normalizer\Collection::class]              = new Normalizer\Collection();
         $normalizers[Normalizer\Composite::class]               = new Normalizer\Composite();
-        $normalizers = array_replace($normalizers, $this->setPropertyChangedListener($this->normalizers));
+        $normalizers = array_replace($normalizers, $this->normalizers);
 
         $encoders = [];
         $encoders[JsonEncoder::class]  = new JsonEncoder();
@@ -79,25 +75,6 @@ final class Serializer implements SerializerInterface, PropertyChangedListenerAw
         $encoders = array_replace($encoders, $this->encoders);
 
         return new SymfonySerializer($normalizers, $encoders);
-    }
-
-    /**
-     * @param array $normalizers
-     *
-     * @return array
-     */
-    private function setPropertyChangedListener(array $normalizers)
-    {
-        return $normalizers;
-        if ($this->propertyChangedListener !== null) {
-            foreach ($normalizers as $normalizer) {
-                if ($normalizer instanceof PropertyChangedListenerAwareInterface) {
-                    $normalizer->propertyChangedListenerIs($this->propertyChangedListener);
-                }
-            }
-        }
-
-        return $normalizers;
     }
 
     /**

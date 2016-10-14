@@ -2,8 +2,6 @@
 
 namespace Blackprism\Demo\Repository\Country\Configuration;
 
-use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareInterface;
-use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareTrait;
 use Blackprism\CouchbaseODM\Serializer\Normalizer\Composite;
 use Blackprism\Demo\Model;
 use Blackprism\Demo\Repository\Country;
@@ -11,10 +9,9 @@ use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class Normalizer implements NormalizerAwareInterface, NormalizerInterface, PropertyChangedListenerAwareInterface
+class Normalizer implements NormalizerAwareInterface, NormalizerInterface
 {
     use NormalizerAwareTrait;
-    use PropertyChangedListenerAwareTrait;
 
     private $context = [
         Composite::CONFIG_MAPPING => [

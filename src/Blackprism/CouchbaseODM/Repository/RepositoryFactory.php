@@ -4,19 +4,13 @@ namespace Blackprism\CouchbaseODM\Repository;
 
 use Blackprism\CouchbaseODM\Connection\ConnectionAwareInterface;
 use Blackprism\CouchbaseODM\Connection\ConnectionInterface;
-use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareInterface;
-use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareTrait;
-use Blackprism\CouchbaseODM\Serializer\SerializerFactoryAwareInterface;
-use Blackprism\CouchbaseODM\Serializer\SerializerFactoryInterface;
 use Blackprism\CouchbaseODM\Value\ClassName;
 
 /**
  * RepositoryFactory
  */
-final class RepositoryFactory implements PropertyChangedListenerAwareInterface
+final class RepositoryFactory
 {
-
-    use PropertyChangedListenerAwareTrait;
 
     /**
      * @var ConnectionInterface
@@ -54,10 +48,6 @@ final class RepositoryFactory implements PropertyChangedListenerAwareInterface
 
         if ($repository instanceof ConnectionAwareInterface) {
             $repository->connectionIs($this->connection);
-        }
-
-        if ($repository instanceof PropertyChangedListenerAwareInterface) {
-            $repository->propertyChangedListenerIs($this->propertyChangedListener);
         }
 
         $this->repositories[$className->value()] = $repository;

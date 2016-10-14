@@ -6,8 +6,6 @@ use Blackprism\CouchbaseODM\Bucket;
 use Blackprism\CouchbaseODM\Connection\ConnectionAwareInterface;
 use Blackprism\CouchbaseODM\Connection\ConnectionAwareTrait;
 use Blackprism\CouchbaseODM\Serializer\Denormalizer;
-use Blackprism\CouchbaseODM\Serializer\SerializerFactoryAwareInterface;
-use Blackprism\CouchbaseODM\Serializer\SerializerFactoryAwareTrait;
 use Blackprism\CouchbaseODM\Value\BucketName;
 use Blackprism\Demo\Repository\Country;
 use Blackprism\Demo\Repository\Mayor;

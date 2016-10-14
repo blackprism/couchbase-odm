@@ -2,28 +2,20 @@
 
 namespace Blackprism\Demo\Repository\City;
 
-use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareInterface;
-use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareTrait;
-use Blackprism\CouchbaseODM\Serializer\Encoder\ArrayDecoder;
-use Blackprism\CouchbaseODM\Serializer\Encoder\ArrayEncoder;
-use Blackprism\CouchbaseODM\Serializer\InputOutput;
-use Blackprism\CouchbaseODM\Serializer\Serializer;
-use Blackprism\Demo\Repository\City;
-use Blackprism\Demo\Repository\Country;
-use Blackprism\Demo\Repository\Mayor;
 use Blackprism\CouchbaseODM\Bucket;
 use Blackprism\CouchbaseODM\Connection\ConnectionAwareInterface;
 use Blackprism\CouchbaseODM\Connection\ConnectionAwareTrait;
 use Blackprism\CouchbaseODM\Serializer\Denormalizer;
+use Blackprism\CouchbaseODM\Serializer\Serializer;
 use Blackprism\CouchbaseODM\Value\BucketName;
-use Blackprism\CouchbaseODM\Value\DocumentId;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Blackprism\Demo\Repository\City;
+use Blackprism\Demo\Repository\Country;
+use Blackprism\Demo\Repository\Mayor;
 use Symfony\Component\Serializer\SerializerInterface;
 
-class Repository implements ConnectionAwareInterface, PropertyChangedListenerAwareInterface
+class Repository implements ConnectionAwareInterface
 {
     use ConnectionAwareTrait;
-    use PropertyChangedListenerAwareTrait;
 
     const BUCKET_NAME = 'odm-test';
 
@@ -54,8 +46,6 @@ class Repository implements ConnectionAwareInterface, PropertyChangedListenerAwa
         if ($type !== '') {
             $serializer->typeIs($type);
         }
-
-        $serializer->propertyChangedListenerIs($this->propertyChangedListener);
 
         return $serializer;
     }
