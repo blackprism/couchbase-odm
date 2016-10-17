@@ -34,6 +34,16 @@ class Normalizer implements NormalizerAwareInterface, NormalizerInterface
         ]
     ];
 
+    public function __construct()
+    {
+        $this->context[Composite::CONFIG_OPTION] = [
+            Composite::CONFIG_OPTION_IDENTIFIER_GETTER => 'getId',
+            Composite::CONFIG_OPTION_IDENTIFIER_GENERATOR => function ($city) {
+                return uniqid('city-');
+            }
+        ];
+    }
+
     /**
      *
      * Normalizes an object into a set of arrays/scalars.

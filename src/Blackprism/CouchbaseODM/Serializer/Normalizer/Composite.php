@@ -17,12 +17,28 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
     use NormalizerAwareTrait;
 
     /** @TODO utiliser la portée public */
-    const CONFIG_OPTION             = 'option';
-    const CONFIG_MAPPING            = 'mapping';
-    const CONFIG_MAPPING_GETTER     = 'getter';
-    const CONFIG_MAPPING_NORMALIZE  = 'normalize';
-    const CONFIG_MAPPING_EXTERNAL   = 'external';
-    const CONFIG_MAPPING_KEY_LINKED = 'keyLinked';
+    const CONFIG_OPTION                      = 'option';
+    const CONFIG_OPTION_IDENTIFIER_GETTER    = 'identifierGetter';
+    const CONFIG_OPTION_IDENTIFIER_GENERATOR = 'identifierGenerator';
+    const CONFIG_MAPPING                     = 'mapping';
+    const CONFIG_MAPPING_GETTER              = 'getter';
+    const CONFIG_MAPPING_NORMALIZE           = 'normalize';
+    const CONFIG_MAPPING_EXTERNAL            = 'external';
+    const CONFIG_MAPPING_KEY_LINKED          = 'keyLinked';
+
+    /**
+     * @param array $context
+     *
+     * @throws \UnexpectedValueException
+     */
+    private function checkContext(array $context)
+    {
+        if (isset($context[self::CONFIG_MAPPING]) === false) {
+            // @TODO utilisez une meilleure exception
+            throw new \UnexpectedValueException('Missing context ' . self::CONFIG_MAPPING);
+        }
+    }
+
 
     /**
      * Normalizes an object into a set of arrays/scalars.
@@ -37,11 +53,8 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
      */
     public function normalize($object, $format = null, array $context = [])
     {
-        if (isset($context[self::CONFIG_MAPPING]) === false) {
-            // @TODO utilisez une meilleure exception
-            throw new \UnexpectedValueException('Missing context ' . self::CONFIG_MAPPING);
-        }
-
+        $this->checkContext($context);
+        $options = $context[self::CONFIG_OPTION] ?? [];
         $mapping = $context[self::CONFIG_MAPPING];
 
         $normalized = [];
@@ -49,15 +62,18 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
         $linkedProperties = [];
         if ($object instanceof NotifyPropertyChangedInterface && $object->isTracked() === true) {
             $properties = $object->getPropertiesChanged();
-            $objectId = '$object->getId()';
+
+            if (isset($options[self::CONFIG_OPTION_IDENTIFIER_GETTER]) === true) {
+                $objectId = $object->{$options[self::CONFIG_OPTION_IDENTIFIER_GETTER]}();
+            }
         } else {
             $properties = $mapping;
-            // @TODO revoir la création de uniqid
-            $objectId = uniqid('city-');
+
+            if (isset($options[self::CONFIG_OPTION_IDENTIFIER_GENERATOR]) === true) {
+                $objectId = $options[self::CONFIG_OPTION_IDENTIFIER_GENERATOR]($object);
+            }
         }
 
-        // @TODO array_keys() plus rapide ?
-        // @TODO dans un cas $properties = $mapping c'est bizarre
         foreach ($properties as $property => $values) {
             if (isset($mapping[$property][self::CONFIG_MAPPING_GETTER]) === false) {
                 // @TODO utilisez une meilleure exception
@@ -72,7 +88,7 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
                     $linkedProperties[$mapping[$property][self::CONFIG_MAPPING_KEY_LINKED]] = key($propertyNormalized);
                 }
 
-                if (($mapping[$property][self::CONFIG_MAPPING_EXTERNAL] ?? false) !== false) {
+                if (($mapping[$property][self::CONFIG_MAPPING_EXTERNAL] ?? false) === true) {
                     $normalized = array_replace($normalized, $propertyNormalized);
                 } else {
                     $objectArray[$property] = $propertyNormalized;
@@ -85,7 +101,11 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
         $objectArray = array_replace($objectArray, $linkedProperties);
 
         if ($objectArray !== []) {
-            $normalized[$objectId] = $objectArray;
+            if (isset($objectId) === true) {
+                $normalized[$objectId] = $objectArray;
+            } else {
+                $normalized[] = $objectArray;
+            }
         }
 
         return $normalized;
