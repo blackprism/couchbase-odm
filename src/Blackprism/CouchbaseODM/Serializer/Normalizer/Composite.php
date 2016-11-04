@@ -39,6 +39,42 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
         }
     }
 
+    /**
+     * @param array  $mapping
+     * @param string $property
+     * @param mixed  $propertyValue
+     * @param array  $objectArray
+     * @param array  $normalized
+     * @param array  $context
+     *
+     * @return array
+     */
+    private function mapProperty(
+        array $mapping,
+        string $property,
+        $propertyValue,
+        array $objectArray,
+        array $normalized,
+        array $context): array {
+        if (($mapping[$property][self::CONFIG_MAPPING_NORMALIZE] ?? false) === true) {
+            $propertyNormalized = $this->normalizer->normalize($propertyValue, null, $context);
+
+            if (($mapping[$property][self::CONFIG_MAPPING_KEY_LINKED] ?? false) !== false) {
+                $linkedProperties[$mapping[$property][self::CONFIG_MAPPING_KEY_LINKED]] = key($propertyNormalized);
+            }
+
+            if (($mapping[$property][self::CONFIG_MAPPING_EXTERNAL] ?? false) === true) {
+                $normalized = array_replace($normalized, $propertyNormalized);
+                return [$objectArray, $normalized];
+            }
+
+            $objectArray[$property] = $propertyNormalized;
+            return [$objectArray, $normalized];
+        }
+
+        $objectArray[$property] = $propertyValue;
+        return [$objectArray, $normalized];
+    }
 
     /**
      * Normalizes an object into a set of arrays/scalars.
@@ -81,21 +117,8 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
             }
 
             $propertyValue = $object->{$mapping[$property][self::CONFIG_MAPPING_GETTER]}();
-            if (($mapping[$property][self::CONFIG_MAPPING_NORMALIZE] ?? false) === true) {
-                $propertyNormalized = $this->normalizer->normalize($propertyValue, null, $context);
-
-                if (($mapping[$property][self::CONFIG_MAPPING_KEY_LINKED] ?? false) !== false) {
-                    $linkedProperties[$mapping[$property][self::CONFIG_MAPPING_KEY_LINKED]] = key($propertyNormalized);
-                }
-
-                if (($mapping[$property][self::CONFIG_MAPPING_EXTERNAL] ?? false) === true) {
-                    $normalized = array_replace($normalized, $propertyNormalized);
-                } else {
-                    $objectArray[$property] = $propertyNormalized;
-                }
-            } else {
-                $objectArray[$property] = $propertyValue;
-            }
+            list($objectArray, $normalized) =
+                $this->mapProperty($mapping, $property, $propertyValue, $objectArray, $normalized, $context);
         }
 
         $objectArray = array_replace($objectArray, $linkedProperties);
