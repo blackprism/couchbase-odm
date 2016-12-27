@@ -12,9 +12,9 @@ use Symfony\Component\Serializer\Encoder\DecoderInterface;
 interface ChainableInterface extends DecoderInterface
 {
     /**
-     * @param DecoderInterface $decoder
+     * @param ChainableInterface $chainableDecoder
      *
      * @return self
      */
-    public function nextIs(DecoderInterface $decoder): self;
+    public function nextIs(ChainableInterface $chainableDecoder): self;
 }

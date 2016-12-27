@@ -36,13 +36,13 @@ class MergePaths implements ChainableInterface
     }
 
     /**
-     * @param DecoderInterface $decoder
+     * @param DecoderInterface $chainableDecoder
      *
      * @return ChainableInterface
      */
-    public function nextIs(DecoderInterface $decoder): ChainableInterface
+    public function nextIs(ChainableInterface $chainableDecoder): ChainableInterface
     {
-        $this->next = $decoder;
+        $this->next = $chainableDecoder;
 
         return $this;
     }
