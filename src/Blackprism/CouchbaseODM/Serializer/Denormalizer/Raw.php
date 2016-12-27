@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Blackprism\CouchbaseODM\Serializer\Denormalizer;
 
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;

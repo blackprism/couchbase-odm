@@ -25,9 +25,21 @@ class Collection implements NormalizerAwareInterface, NormalizerInterface
      */
     public function normalize($values, $format = null, array $context = [])
     {
+        if ($values instanceof \Iterator === false) {
+            return [];
+        }
+
+        if ($this->normalizer === false) {
+            return [];
+        }
+
         foreach ($values as &$value) {
             $value = $this->normalizer->normalize($value, $format, $context);
         }
+
+        echo "Bouh\n";
+        var_dump($values);
+        die;
 
         return $values;
     }

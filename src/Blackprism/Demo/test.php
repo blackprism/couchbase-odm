@@ -51,7 +51,12 @@ $cityRepository = $repositoryFactory->get(new ClassName(City\Repository::class))
 //    var_dump($cityRepository->get(new DocumentId('test-counter')));
 //} catch (NoSuchKey $exception) {
 
+//echo "Ask city-1\n";
 //var_dump($cityRepository->get('city-1'));
+//die;
+//echo "Ask city-1 by N1QL\n";
+//var_dump($cityRepository->getCity1ByN1QL());
+//die;
 //var_dump($cityRepository->getJuice());
 //die;
 //echo "Ask one juice as a city\n";
@@ -62,10 +67,20 @@ $cityRepository = $repositoryFactory->get(new ClassName(City\Repository::class))
 //$city = $cityRepository->getCityWithMayor('city-internal-4');
 //var_dump($city);
 //die;
+echo "Ask cities with mayor in mergepath mode\n";
+$cities = $cityRepository->getCitiesWithMayorAndMergePath();
+var_dump($cities);
+foreach ($cities as $city) {
+    var_dump($city);
+}
+die;
 echo "Ask cities with mayor\n";
 $cities = $cityRepository->getCitiesWithMayor();
 var_dump($cities);
-//die;
+foreach ($cities as $city) {
+    var_dump($city);
+}
+die;
 $cities[2]->setName('Paris (' . uniqid('edited-') . ')');
 $country = $cities[2]->getCountry();
 $country->setName('France (' . uniqid('edited-') . ')');

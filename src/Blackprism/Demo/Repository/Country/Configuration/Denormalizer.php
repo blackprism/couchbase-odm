@@ -12,6 +12,16 @@ class Denormalizer implements DenormalizerAwareInterface, DenormalizerInterface
 {
     use DenormalizerAwareTrait;
 
+    /**
+     * Denormalizes data back into an object of the given class.
+     *
+     * @param mixed  $data    data to restore
+     * @param string $class   the expected class to instantiate
+     * @param string $format  format the given data was extracted from
+     * @param array  $context options available to the denormalizer
+     *
+     * @return object
+     */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
         $country = new Country();

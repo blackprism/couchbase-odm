@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Blackprism\CouchbaseODM\Serializer\Encoder;
 
 use Symfony\Component\Serializer\Encoder\DecoderInterface;

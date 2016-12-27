@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Blackprism\CouchbaseODM\Serializer\Denormalizer;
 
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
@@ -26,7 +28,7 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
      *
      * @param string $type type to use for output of denormalize
      */
-    public function __construct($type = MergePaths::class)
+    public function __construct($type = DispatchToType::class)
     {
         $this->type = $type;
     }
@@ -43,11 +45,35 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        foreach ($data as &$value) {
-            $value = $this->denormalizer->denormalize($value, $this->type, $format, $context);
+        if (is_array($data) === false && $data instanceof \Traversable === false) {
+            return new \EmptyIterator();
+            /**
+             * @TODO how to log/inform about this error ?
+             * throw new \InvalidArgumentException(
+             * 'Data expected to be an array or a traversable, ' . gettype($data) . ' given.'
+            * );*/
         }
 
-        return $data;
+        $indexToExtract = null;
+        $keyToExtract   = null;
+
+        if ($class !== 'collection[]') {
+            list ($indexToExtract, $keyToExtract) = $this->extractIndexAndKey($class);
+        }
+
+        foreach ($data as $index => &$value) {
+            $value = $this->denormalizer->denormalize($value, $this->type, $format, $context);
+
+            if ($keyToExtract !== null) {
+                $value = $value[$keyToExtract];
+            }
+
+            if ($indexToExtract !== null && $index == $indexToExtract) {
+                return $value;
+            }
+        }
+
+        return new \ArrayIterator($data);
     }
 
     /**
@@ -61,11 +87,27 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
      */
     public function supportsDenormalization($data, $type, $format = null)
     {
-        if ($type === self::class) {
+        if (strpos($type, 'collection[') === 0) {
             echo self::class . "\n";
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return string[]
+     */
+    private function extractIndexAndKey(string $type)
+    {
+        preg_match('/^collection\[(?<index>[^]]*)\](\[(?<key>.+)\])?$/', $type, $match);
+
+        if ($match['index'] === '') {
+            $match['index'] = null;
+        }
+
+        return [$match['index'] ?? null, $match['key'] ?? null];
     }
 }

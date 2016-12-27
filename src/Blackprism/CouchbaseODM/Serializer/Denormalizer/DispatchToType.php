@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Blackprism\CouchbaseODM\Serializer\Denormalizer;
 
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
@@ -13,7 +15,6 @@ class DispatchToType implements DenormalizerAwareInterface, DenormalizerInterfac
 {
 
     use DenormalizerAwareTrait;
-
     /**
      * Type to use for output of denormalize.
      *
@@ -22,30 +23,28 @@ class DispatchToType implements DenormalizerAwareInterface, DenormalizerInterfac
     private $typeProperty = 'type';
 
     /**
-     * Denormalizer to use for typeless.
-     *
      * @var string
      */
-    private $typelessDenormalizer = '';
+    private $key = '';
 
     /**
      * @param string $type
      *
-     * @return $this
+     * @return self
      */
-    public function typePropertyIs(string $type): self
+    public function __construct(string $type = '')
     {
-        $this->typeProperty = $type;
-
-        return $this;
+        if ($type !== '') {
+            $this->typeProperty = $type;
+        }
     }
 
-
-    public function denormalizeTypelessWith(string $denormalizer): self
+    /**
+     * @param string $key
+     */
+    public function getByKey(string $key)
     {
-        $this->typelessDenormalizer = $denormalizer;
-
-        return $this;
+        $this->key = $key;
     }
 
     /**
@@ -60,13 +59,24 @@ class DispatchToType implements DenormalizerAwareInterface, DenormalizerInterfac
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        if (isset($data[$this->typeProperty]) === true) {
-            $class = $data[$this->typeProperty];
-        } else {
-            $class = $this->typelessDenormalizer;
+        foreach ($data as $key => &$element) {
+            if (isset($context['key']) === true && $context['key'] !== $key) {
+                continue;
+            }
+
+            if (isset($element[$this->typeProperty]) === true) {
+                $class = $element[$this->typeProperty];
+            } else {
+                // @TODO pas encore géré le typeless
+                //$class = $this->typelessDenormalizer;
+                var_dump("Pas trouvé de type", $this->typeProperty, $element);
+                die;
+            }
+
+            $element = $this->denormalizer->denormalize($element, $class, $format, $context);
         }
 
-        return $this->denormalizer->denormalize($data, $class, $format, $context);
+        return new \ArrayIterator($data);
     }
 
     /**

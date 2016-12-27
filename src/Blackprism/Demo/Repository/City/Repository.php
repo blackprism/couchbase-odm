@@ -6,11 +6,14 @@ use Blackprism\CouchbaseODM\Bucket;
 use Blackprism\CouchbaseODM\Connection\ConnectionAwareInterface;
 use Blackprism\CouchbaseODM\Connection\ConnectionAwareTrait;
 use Blackprism\CouchbaseODM\Serializer\Denormalizer;
-use Blackprism\CouchbaseODM\Serializer\Serializer;
+use Blackprism\CouchbaseODM\Serializer\Decoder\MergePaths;
+use Blackprism\CouchbaseODM\Serializer\Encoder\ArrayDecoder;
 use Blackprism\CouchbaseODM\Value\BucketName;
 use Blackprism\Demo\Repository\City;
 use Blackprism\Demo\Repository\Country;
 use Blackprism\Demo\Repository\Mayor;
+use Symfony\Component\Serializer\Encoder\JsonDecode;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class Repository implements ConnectionAwareInterface
@@ -31,13 +34,23 @@ class Repository implements ConnectionAwareInterface
      */
     public function getSerializer(string $type = '', array $normalizers = [], array $encoders = [])
     {
+        $city = new City\Configuration\Denormalizer();
+        $city->addDenormalize('country', new Country\Configuration\Denormalizer());
+        $city->addDenormalize('mayor', new Country\Configuration\Denormalizer());
+
         $defaultNormalizers = [
-            new City\Configuration\Denormalizer(),
+            $city,
             new City\Configuration\Normalizer(),
-            new Country\Configuration\Denormalizer(),
             new Country\Configuration\Normalizer(),
-            new Mayor\Configuration\Denormalizer(),
             new Mayor\Configuration\Normalizer()
+        ];
+
+        $dispatchToType = new DispatchToType();
+        $mergePaths = new MergePaths("inutile");
+        $mergePaths->nextIs($dispatchToType);
+
+        $encoders = [
+            $mergePaths
         ];
 
         $normalizers = array_replace($defaultNormalizers, $normalizers);
@@ -50,6 +63,9 @@ class Repository implements ConnectionAwareInterface
         return $serializer;
     }
 
+    /**
+     * @return Bucket
+     */
     public function getBucket()
     {
         if ($this->bucket === null) {
@@ -60,8 +76,7 @@ class Repository implements ConnectionAwareInterface
     }
 
     /**
-     * @param        $documentId
-     * @param string $type
+     * @param mixed $documentId
      *
      * @return object
      * @throws \Blackprism\CouchbaseODM\Exception\Exception
@@ -69,7 +84,20 @@ class Repository implements ConnectionAwareInterface
     public function get($documentId)
     {
         $metaDoc = $this->getBucket()->get($documentId);
-        return $this->getSerializer('city')->deserialize($metaDoc->value(), Denormalizer\MergePaths::class, 'json');
+
+        $normalizers = [
+            new Denormalizer\CollectionExtractObjectWithKey(),
+            new City\Configuration\Denormalizer(),
+            new Country\Configuration\Denormalizer(),
+        ];
+
+        $encoders = [
+            new JsonDecode(true),
+        ];
+
+        $serializer = new Serializer($normalizers, $encoders);
+
+        return $serializer->deserialize($metaDoc->value(), 'city', 'json');
     }
 
     /**
@@ -112,14 +140,49 @@ class Repository implements ConnectionAwareInterface
         return $this->getSerializer('', $normalizers)->deserialize($result->rows(), Denormalizer\FirstObject::class, 'array');
     }
 
+    /**
+     * @return \Blackprism\Demo\Model\City
+     */
+    public function getCity1ByN1QL()
+    {
+        $n1ql = '
+            SELECT @city
+            FROM `odm-test` AS city
+            WHERE meta(@city).id = "city-1"';
+
+        $result = $this->getBucket()->query($n1ql);
+
+        $normalizers = [
+            new Denormalizer\DispatchToType(),
+            new City\Configuration\Denormalizer(),
+            new Country\Configuration\Denormalizer(),
+        ];
+
+        $encoders = [
+            new ArrayDecoder(),
+        ];
+
+        $serializer = new Serializer($normalizers, $encoders);
+
+        return $serializer->deserialize($result->rows(), Denormalizer\DispatchToType::class . '[0]', 'array');
+    }
+
     public function getCityWithMayor($id)
     {
         $n1ql = '
             SELECT
-              @city,
-              meta(@city).id AS `city.id`,
-              @mayor AS `city.mayor`,
-              meta(@mayor).id AS `city.mayor.id`
+              OBJECT_CONCAT(
+                @city,
+                {
+                  meta(@city).id,
+                  "mayor": OBJECT_CONCAT(
+                    @mayor,
+                    {
+                      meta(@mayor).id
+                    }
+                  )
+                }
+              ) as city
             FROM `odm-test` AS city
             JOIN `odm-test` AS mayor ON KEYS city.mayorId
             WHERE mayor.`internal-type` = "mayor"
@@ -127,31 +190,94 @@ class Repository implements ConnectionAwareInterface
 
         $result = $this->getBucket()->query($n1ql);
 
-        $dispatchToType = new Denormalizer\DispatchToType();
-        $dispatchToType->typePropertyIs('internal-type');
-        $normalizers[Denormalizer\DispatchToType::class] = $dispatchToType;
+        $normalizers = [
+            new Denormalizer\DispatchToType('internal-type'),
+            new City\Configuration\Denormalizer(),
+            new City\Configuration\Denormalizer(),
+            new Country\Configuration\Denormalizer(),
+            new Mayor\Configuration\Denormalizer()
+        ];
 
-        return $this->getSerializer('', $normalizers)->deserialize($result->rows(), Denormalizer\FirstObject::class, 'array');
+        $encoders = [
+            new ArrayDecoder(),
+        ];
+
+        $serializer = new Serializer($normalizers, $encoders);
+
+        return $serializer->deserialize($result->rows(), Denormalizer\DispatchToType::class . '[0]', 'array');
     }
 
     public function getCitiesWithMayor()
     {
         $n1ql = '
             SELECT
-              @city,
-              meta(@city).id AS `city.id`,
-              @mayor AS `city.mayor`,
-              meta(@mayor).id AS `city.mayor.id`
+              OBJECT_CONCAT(
+                @city,
+                {
+                  meta(@city).id,
+                  "mayor": OBJECT_CONCAT(
+                    @mayor,
+                    {
+                      meta(@mayor).id
+                    }
+                  )
+                }
+              ) as city
             FROM `odm-test` AS city
-            JOIN `odm-test` AS mayor ON KEYS city.mayorId
+            LEFT JOIN `odm-test` AS mayor ON KEYS city.mayorId
             WHERE city.type = "city" AND mayor.type = "mayor"
             ORDER BY city.name';
 
         $result = $this->getBucket()->query($n1ql);
 
-        $normalizers[Denormalizer\MergePaths::class]  = new Denormalizer\MergePaths(Denormalizer\FirstObject::class);
-        $normalizers[Denormalizer\FirstObject::class] = new Denormalizer\FirstObject(Denormalizer\DispatchToType::class);
+        $normalizers = [
+            new Denormalizer\DispatchToType(),
+            new Denormalizer\Collection(),
+            new City\Configuration\Denormalizer(),
+            new City\Configuration\Denormalizer(),
+            new Country\Configuration\Denormalizer(),
+            new Mayor\Configuration\Denormalizer()
+        ];
 
-        return $this->getSerializer('')->deserialize($result->rows(), Denormalizer\CollectionFirstObject::class, 'array');
+        $encoders = [
+            new ArrayDecoder(),
+        ];
+
+        $serializer = new Serializer($normalizers, $encoders);
+
+        return $serializer->deserialize($result->rows(), 'collection[][city]', 'array');
+    }
+
+    public function getCitiesWithMayorAndMergePath()
+    {
+        $n1ql = '
+            SELECT
+                @city,
+                meta(@city).id as `city.id`,
+                @mayor as `city.mayor`,
+                meta(@mayor).id as `city.mayor.id`
+            FROM `odm-test` AS city
+            LEFT JOIN `odm-test` AS mayor ON KEYS city.mayorId
+            WHERE city.type = "city" AND mayor.type = "mayor"
+            ORDER BY city.name';
+
+        $result = $this->getBucket()->query($n1ql);
+
+        $normalizers = [
+            new Denormalizer\DispatchToType(),
+            new Denormalizer\Collection(),
+            new City\Configuration\Denormalizer(),
+            new City\Configuration\Denormalizer(),
+            new Country\Configuration\Denormalizer(),
+            new Mayor\Configuration\Denormalizer()
+        ];
+
+        $encoders = [
+            new MergePaths('')
+        ];
+
+        $serializer = new Serializer($normalizers, $encoders);
+
+        return $serializer->deserialize($result->rows(), 'collection[][city]', MergePaths::class);
     }
 }
