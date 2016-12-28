@@ -11,6 +11,8 @@ use Blackprism\CouchbaseODM\Value\Couchbase\Result;
 
 /**
  * Bucket
+ *
+ * @todo options on Query https://forums.couchbase.com/t/php-sdk-running-query-against-2-buckets/10717/4
  */
 final class Bucket
 {

@@ -7,12 +7,13 @@ use Blackprism\CouchbaseODM\Connection\ConnectionAwareInterface;
 use Blackprism\CouchbaseODM\Connection\ConnectionAwareTrait;
 use Blackprism\CouchbaseODM\Serializer\Denormalizer;
 use Blackprism\CouchbaseODM\Serializer\Decoder\MergePaths;
-use Blackprism\CouchbaseODM\Serializer\Encoder\ArrayDecoder;
+use Blackprism\CouchbaseODM\Serializer\Decoder\ArrayDecoder;
 use Blackprism\CouchbaseODM\Value\BucketName;
 use Blackprism\Demo\Repository\City;
 use Blackprism\Demo\Repository\Country;
 use Blackprism\Demo\Repository\Mayor;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -24,44 +25,6 @@ class Repository implements ConnectionAwareInterface
 
     /** @var Bucket */
     private $bucket;
-
-    /**
-     * @param string $type
-     * @param array $normalizers
-     * @param array $encoders
-     *
-     * @return SerializerInterface
-     */
-    public function getSerializer(string $type = '', array $normalizers = [], array $encoders = [])
-    {
-        $city = new City\Configuration\Denormalizer();
-        $city->addDenormalize('country', new Country\Configuration\Denormalizer());
-        $city->addDenormalize('mayor', new Country\Configuration\Denormalizer());
-
-        $defaultNormalizers = [
-            $city,
-            new City\Configuration\Normalizer(),
-            new Country\Configuration\Normalizer(),
-            new Mayor\Configuration\Normalizer()
-        ];
-
-        $dispatchToType = new DispatchToType();
-        $mergePaths = new MergePaths("inutile");
-        $mergePaths->nextIs($dispatchToType);
-
-        $encoders = [
-            $mergePaths
-        ];
-
-        $normalizers = array_replace($defaultNormalizers, $normalizers);
-        $serializer = new Serializer($normalizers, $encoders);
-
-        if ($type !== '') {
-            $serializer->typeIs($type);
-        }
-
-        return $serializer;
-    }
 
     /**
      * @return Bucket
@@ -76,6 +39,33 @@ class Repository implements ConnectionAwareInterface
     }
 
     /**
+     * @param string $type
+     * @param array $normalizers
+     * @param array $encoders
+     *
+     * @return SerializerInterface
+     */
+    public function getSerializer(string $type = '', array $normalizers = [], array $encoders = [])
+    {
+        $normalizers = [
+            new City\Configuration\Denormalizer(),
+            new City\Configuration\Normalizer(),
+            new Country\Configuration\Normalizer(),
+            new Mayor\Configuration\Normalizer()
+        ];
+
+        $encoders = [
+            new MergePaths('inutile'),
+            new ArrayDecoder(),
+            new JsonEncoder()
+        ];
+
+        $serializer = new Serializer($normalizers, $encoders);
+
+        return $serializer;
+    }
+
+    /**
      * @param mixed $documentId
      *
      * @return object
@@ -86,7 +76,7 @@ class Repository implements ConnectionAwareInterface
         $metaDoc = $this->getBucket()->get($documentId);
 
         $normalizers = [
-            new Denormalizer\CollectionExtractObjectWithKey(),
+            new Denormalizer\Collection(),
             new City\Configuration\Denormalizer(),
             new Country\Configuration\Denormalizer(),
         ];
@@ -135,9 +125,21 @@ class Repository implements ConnectionAwareInterface
 
         $dispatchToType = new Denormalizer\DispatchToType();
         $dispatchToType->denormalizeTypelessWith(Denormalizer\Raw::class);
-        $normalizers[Denormalizer\DispatchToType::class] = $dispatchToType;
 
-        return $this->getSerializer('', $normalizers)->deserialize($result->rows(), Denormalizer\FirstObject::class, 'array');
+        $normalizers = [
+            $dispatchToType,
+            new Denormalizer\FirstObject(),
+            new City\Configuration\Denormalizer(),
+            new Country\Configuration\Denormalizer(),
+        ];
+
+        $encoders = [
+            new ArrayDecoder(),
+        ];
+
+        $serializer = new Serializer($normalizers, $encoders);
+
+        return $serializer->deserialize($result->rows(), Denormalizer\FirstObject::class, 'array');
     }
 
     /**

@@ -31,6 +31,8 @@ trait NotifyPropertyChangedTrait
      * @param string $propertyName
      * @param mixed $oldValue
      * @param mixed $newValue
+     *
+     * @return $this
      */
     private function propertyChanged(string $propertyName, $oldValue, $newValue)
     {
@@ -38,7 +40,16 @@ trait NotifyPropertyChangedTrait
             return;
         }
 
-        $this->properties[$propertyName] = 1;
+        if (isset($this->properties[$propertyName]) === false) {
+            $this->properties[$propertyName] = [$oldValue, $newValue];
+            return $this;
+        }
+
+        if ($this->properties[$propertyName][0] !== $newValue) {
+            $this->properties[$propertyName][1] = $newValue;
+        }
+
+        return $this;
     }
 
     /**
@@ -46,6 +57,8 @@ trait NotifyPropertyChangedTrait
      */
     public function getPropertiesChanged()
     {
-        return $this->properties;
+        return array_filter($this->properties, function ($item) {
+            return $item[0] !== $item[1];
+        });
     }
 }

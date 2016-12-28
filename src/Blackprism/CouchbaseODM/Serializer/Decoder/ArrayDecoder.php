@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Blackprism\CouchbaseODM\Serializer\Encoder;
+namespace Blackprism\CouchbaseODM\Serializer\Decoder;
 
 use Symfony\Component\Serializer\Encoder\DecoderInterface;
 

@@ -67,20 +67,20 @@ $cityRepository = $repositoryFactory->get(new ClassName(City\Repository::class))
 //$city = $cityRepository->getCityWithMayor('city-internal-4');
 //var_dump($city);
 //die;
-echo "Ask cities with mayor in mergepath mode\n";
-$cities = $cityRepository->getCitiesWithMayorAndMergePath();
-var_dump($cities);
-foreach ($cities as $city) {
-    var_dump($city);
-}
-die;
+//echo "Ask cities with mayor in mergepath mode\n";
+//$cities = $cityRepository->getCitiesWithMayorAndMergePath();
+//var_dump($cities);
+//foreach ($cities as $city) {
+//    var_dump($city);
+//}
+//die;
 echo "Ask cities with mayor\n";
 $cities = $cityRepository->getCitiesWithMayor();
 var_dump($cities);
 foreach ($cities as $city) {
     var_dump($city);
 }
-die;
+//die;
 $cities[2]->setName('Paris (' . uniqid('edited-') . ')');
 $country = $cities[2]->getCountry();
 $country->setName('France (' . uniqid('edited-') . ')');
@@ -88,9 +88,11 @@ $cities[2]->countryIs($country);
 $mayor = $cities[2]->getMayor();
 $mayor->setFirstname('Anne (' . uniqid('edited-') . ')');
 $cities[2]->setMayor($mayor);
-//var_dump($cities);
-//var_dump($cities[2]);
-$documentsToUpdate = $cityRepository->getSerializer()->serialize($cities[2], 'array');
+var_dump($cities);
+var_dump($cities[2]);
+var_dump($cities[2]->getPropertiesChanged());
+die;
+$documentsToUpdate = $cityRepository->getSerializer()->serialize($cities[2], 'json');
 var_dump($documentsToUpdate);
 //
 //$cityRepository->save($cities[2]);
