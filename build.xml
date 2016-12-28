@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="Blackprism CouchbaseODM" default="all">
-    <taskdef name="atoum" classpath="./vendor/atoum/atoum/resources/phing/" classname="AtoumTask"/>
+    <!--<taskdef name="atoum" classpath="./vendor/atoum/atoum/resources/phing/" classname="AtoumTask"/>-->
 
     <property name="fullpath" value="./" />
     <resolvepath propertyName="fullpath" file="${fullpath}"/>
@@ -9,7 +9,7 @@
         <phingcall target="phpcs" />
         <phingcall target="phplint" />
         <phingcall target="phpmd" />
-        <phingcall target="test" />
+        <!--<phingcall target="test" />-->
     </target>
 
     <target name="phpcs">
@@ -51,7 +51,7 @@
         </phpcpd>
     </target>
 
-    <target name="test">
+    <!--<target name="test">
         <atoum
                 atoumpharpath="./vendor/bin/atoum"
                 bootstrap="./vendor/autoload.php"
@@ -67,5 +67,5 @@
                 <include name="**/*.php" />
             </fileset>
         </atoum>
-    </target>
+    </target>-->
 </project>

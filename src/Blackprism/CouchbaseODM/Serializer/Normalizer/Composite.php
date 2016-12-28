@@ -55,7 +55,8 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
         $propertyValue,
         array $objectArray,
         array $normalized,
-        array $context): array {
+        array $context
+    ): array {
         if (($mapping[$property][self::CONFIG_MAPPING_NORMALIZE] ?? false) === true) {
             $propertyNormalized = $this->normalizer->normalize($propertyValue, null, $context);
 
