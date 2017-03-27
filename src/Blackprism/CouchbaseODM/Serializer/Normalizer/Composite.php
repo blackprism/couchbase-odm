@@ -2,11 +2,12 @@
 
 namespace Blackprism\CouchbaseODM\Serializer\Normalizer;
 
+use ArrayIterator;
 use Blackprism\CouchbaseODM\Observer\NotifyPropertyChangedInterface;
+use Blackprism\CouchbaseODM\Serializer\Denormalizer\ShouldHaveConfigMappingGetter;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\scalar;
 
 /**
  * Composite
@@ -16,27 +17,31 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
 {
     use NormalizerAwareTrait;
 
-    /** @TODO utiliser la portée public */
-    const CONFIG_OPTION                      = 'option';
-    const CONFIG_OPTION_IDENTIFIER_GETTER    = 'identifierGetter';
-    const CONFIG_OPTION_IDENTIFIER_GENERATOR = 'identifierGenerator';
-    const CONFIG_MAPPING                     = 'mapping';
-    const CONFIG_MAPPING_GETTER              = 'getter';
-    const CONFIG_MAPPING_NORMALIZE           = 'normalize';
-    const CONFIG_MAPPING_EXTERNAL            = 'external';
-    const CONFIG_MAPPING_KEY_LINKED          = 'keyLinked';
+    public const CONFIG_OPTION                      = 'option';
+    public const CONFIG_OPTION_IDENTIFIER_GETTER    = 'identifierGetter';
+    public const CONFIG_OPTION_IDENTIFIER_GENERATOR = 'identifierGenerator';
+    public const CONFIG_MAPPING                     = 'mapping';
+    public const CONFIG_MAPPING_GETTER              = 'getter';
+    public const CONFIG_MAPPING_NORMALIZE           = 'normalize';
+    public const CONFIG_MAPPING_EXTERNAL            = 'external';
+    public const CONFIG_MAPPING_KEY_LINKED          = 'keyLinked';
 
     /**
      * @param array $context
      *
      * @throws \UnexpectedValueException
      */
-    private function checkContext(array $context)
+    private function getOptionsAndMappingFromContext(array $context)
     {
         if (isset($context[self::CONFIG_MAPPING]) === false) {
             // @TODO utilisez une meilleure exception
             throw new \UnexpectedValueException('Missing context ' . self::CONFIG_MAPPING);
         }
+
+        return [
+            $context[self::CONFIG_OPTION] ?? [],
+            $context[self::CONFIG_MAPPING]
+        ];
     }
 
     /**
@@ -57,24 +62,92 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
         array $normalized,
         array $context
     ): array {
-        if (($mapping[$property][self::CONFIG_MAPPING_NORMALIZE] ?? false) === true) {
-            $propertyNormalized = $this->normalizer->normalize($propertyValue, null, $context);
-
-            if (($mapping[$property][self::CONFIG_MAPPING_KEY_LINKED] ?? false) !== false) {
-                $linkedProperties[$mapping[$property][self::CONFIG_MAPPING_KEY_LINKED]] = key($propertyNormalized);
-            }
-
-            if (($mapping[$property][self::CONFIG_MAPPING_EXTERNAL] ?? false) === true) {
-                $normalized = array_replace($normalized, $propertyNormalized);
-                return [$objectArray, $normalized];
-            }
-
-            $objectArray[$property] = $propertyNormalized;
+        if (($mapping[$property][self::CONFIG_MAPPING_NORMALIZE] ?? false) === false) {
+            $objectArray[$property] = $propertyValue;
             return [$objectArray, $normalized];
         }
 
-        $objectArray[$property] = $propertyValue;
+        $propertyNormalized = $this->normalizer->normalize($propertyValue, null, $context);
+
+        if (($mapping[$property][self::CONFIG_MAPPING_KEY_LINKED] ?? false) !== false) {
+            $linkedProperties[$mapping[$property][self::CONFIG_MAPPING_KEY_LINKED]] = key($propertyNormalized);
+        }
+
+        if (($mapping[$property][self::CONFIG_MAPPING_EXTERNAL] ?? false) === true) {
+            $normalized = array_replace($normalized, $propertyNormalized);
+            return [$objectArray, $normalized];
+        }
+
+        $objectArray[$property] = $propertyNormalized;
         return [$objectArray, $normalized];
+    }
+
+    /**
+     * @param object $object
+     *
+     * @return bool
+     */
+    private function isObjectIsTracked($object): bool
+    {
+        return $object instanceof NotifyPropertyChangedInterface && $object->isTracked();
+    }
+
+    /**
+     * @param object $object
+     *
+     * @return array|null
+     */
+    private function getPropertiesForObject($object): ?array
+    {
+        if ($this->isObjectIsTracked($object) === true) {
+            return $object->getPropertiesChanged();
+        }
+
+        return null;
+    }
+
+    /**
+     * @param object $object
+     *
+     * @return array|null
+     */
+    private function getObjectIdForObject($object): ?array
+    {
+        $objectIsTracked = $this->isObjectIsTracked($object);
+
+        if ($objectIsTracked === true && isset($options[self::CONFIG_OPTION_IDENTIFIER_GETTER]) === true) {
+            return $object->{$options[self::CONFIG_OPTION_IDENTIFIER_GETTER]}();
+        }
+
+        if ($objectIsTracked === false && isset($options[self::CONFIG_OPTION_IDENTIFIER_GENERATOR]) === true) {
+            return $options[self::CONFIG_OPTION_IDENTIFIER_GENERATOR]($object);
+        }
+
+        return null;
+    }
+
+    /**
+     * @param object $object
+     * @param array  $mapping
+     *
+     * @return array
+     */
+    private function normalizeObject($object, array $mapping, array $context = []): array
+    {
+        $normalized = [];
+        $objectArray = [];
+
+        $propertiesWithConfigMappingGetter =
+            new ShouldHaveConfigMappingGetter(new ArrayIterator($this->getPropertiesForObject($object) ?? $mapping));
+        $propertiesWithConfigMappingGetter->mappingConfigIs($mapping);
+
+        foreach ($propertiesWithConfigMappingGetter as $property => $values) {
+            $propertyValue = $object->{$mapping[$property][self::CONFIG_MAPPING_GETTER]}();
+            list($objectArray, $normalized) =
+                $this->mapProperty($mapping, $property, $propertyValue, $objectArray, $normalized, $context);
+        }
+
+        return $objectArray;
     }
 
     /**
@@ -90,46 +163,19 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
      */
     public function normalize($object, $format = null, array $context = [])
     {
-        $this->checkContext($context);
-        $options = $context[self::CONFIG_OPTION] ?? [];
-        $mapping = $context[self::CONFIG_MAPPING];
-
         $normalized = [];
-        $objectArray  = [];
-        $linkedProperties = [];
-        if ($object instanceof NotifyPropertyChangedInterface && $object->isTracked() === true) {
-            $properties = $object->getPropertiesChanged();
+        list ($options, $mapping) = $this->getOptionsAndMappingFromContext($context);
 
-            if (isset($options[self::CONFIG_OPTION_IDENTIFIER_GETTER]) === true) {
-                $objectId = $object->{$options[self::CONFIG_OPTION_IDENTIFIER_GETTER]}();
-            }
-        } else {
-            $properties = $mapping;
+        $objectArray = $this->normalizeObject($object, $mapping, $context);
 
-            if (isset($options[self::CONFIG_OPTION_IDENTIFIER_GENERATOR]) === true) {
-                $objectId = $options[self::CONFIG_OPTION_IDENTIFIER_GENERATOR]($object);
-            }
+        $objectId = $this->getObjectIdForObject($object);
+        if ($objectArray !== [] && isset($objectId) === true) {
+            $normalized[$objectId] = $objectArray;
+            return $normalized;
         }
-
-        foreach ($properties as $property => $values) {
-            if (isset($mapping[$property][self::CONFIG_MAPPING_GETTER]) === false) {
-                // @TODO utilisez une meilleure exception
-                throw new \UnexpectedValueException('Missing argument ' . self::CONFIG_MAPPING_GETTER);
-            }
-
-            $propertyValue = $object->{$mapping[$property][self::CONFIG_MAPPING_GETTER]}();
-            list($objectArray, $normalized) =
-                $this->mapProperty($mapping, $property, $propertyValue, $objectArray, $normalized, $context);
-        }
-
-        $objectArray = array_replace($objectArray, $linkedProperties);
 
         if ($objectArray !== []) {
-            if (isset($objectId) === true) {
-                $normalized[$objectId] = $objectArray;
-            } else {
-                $normalized[] = $objectArray;
-            }
+            $normalized[] = $objectArray;
         }
 
         return $normalized;

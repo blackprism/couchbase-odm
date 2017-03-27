@@ -4,7 +4,9 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM\Value\Couchbase;
 
+use Blackprism\CouchbaseODM\Exception\Exception;
 use Blackprism\CouchbaseODM\Exception\ExceptionNormalizer;
+use Couchbase;
 
 /**
  * MetaDoc
@@ -39,9 +41,11 @@ final class MetaDoc
     /**
      * MetaDoc constructor.
      *
-     * @param \CouchbaseMetaDoc $couchbaseMetaDoc
+     * @param Couchbase\Document $couchbaseMetaDoc
+     *
+     * @throws Exception
      */
-    public function __construct(\CouchbaseMetaDoc $couchbaseMetaDoc)
+    public function __construct(Couchbase\Document $couchbaseMetaDoc)
     {
         $this->value = $couchbaseMetaDoc->value;
         $this->flags = $couchbaseMetaDoc->flags;

@@ -4,6 +4,7 @@ namespace Blackprism\Demo;
 
 require_once '../../../vendor/autoload.php';
 
+use Blackprism\CouchbaseODM\Bucket\Invoker;
 use Blackprism\CouchbaseODM\Connection;
 use Blackprism\CouchbaseODM\Observer\PropertyChangedListener;
 use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareInterface;
@@ -12,9 +13,9 @@ use Blackprism\CouchbaseODM\Serializer\SerializerFactory;
 use Blackprism\CouchbaseODM\Value\ClassName;
 use Blackprism\CouchbaseODM\Value\Dsn;
 use Blackprism\Demo\Model;
-use Blackprism\Demo\Repository\City;
 use Blackprism\Demo\Repository\Country;
 use Blackprism\Demo\Repository\Mayor;
+use Blackprism\Demo\Repository2\City\Query\GetById;
 use Blackprism\Serializer\Json\Serialize;
 
 ini_set('xdebug.var_display_max_children', -1);
@@ -44,8 +45,21 @@ echo "Connection defined\n";
 $repositoryFactory = new RepositoryFactory($connection);
 echo "RepositoryFactory created\n";
 
-/** @var City\Repository $cityRepository */
-$cityRepository = $repositoryFactory->get(new ClassName(City\Repository::class));
+$cityBucketWithConnection = $repositoryFactory->get(new \Blackprism\Demo\Repository\City\Repository(new Invoker()));
+$city1 = $cityBucketWithConnection->get('city-1');
+
+var_dump($city1);
+
+echo "-----\n";
+$result = $cityBucketWithConnection->getCitiesWithMayor();
+var_dump($result);
+foreach ($result as $truc) {
+    var_dump($truc);
+}
+die;
+
+
+
 //
 //try {
 //    var_dump($cityRepository->get(new DocumentId('test-counter')));
@@ -76,7 +90,6 @@ $cityRepository = $repositoryFactory->get(new ClassName(City\Repository::class))
 //die;
 echo "Ask cities with mayor\n";
 $cities = $cityRepository->getCitiesWithMayor();
-var_dump($cities);
 foreach ($cities as $city) {
     var_dump($city);
 }
@@ -88,12 +101,12 @@ $cities[2]->countryIs($country);
 $mayor = $cities[2]->getMayor();
 $mayor->setFirstname('Anne (' . uniqid('edited-') . ')');
 $cities[2]->setMayor($mayor);
-var_dump($cities);
-var_dump($cities[2]);
+//var_dump($cities);
+//var_dump($cities[2]);
 var_dump($cities[2]->getPropertiesChanged());
-die;
 $documentsToUpdate = $cityRepository->getSerializer()->serialize($cities[2], 'json');
 var_dump($documentsToUpdate);
+die;
 //
 //$cityRepository->save($cities[2]);
 //var_dump($cities[2], $documentsToUpdate);

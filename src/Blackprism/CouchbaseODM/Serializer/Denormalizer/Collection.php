@@ -28,7 +28,7 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
      *
      * @param string $type type to use for output of denormalize
      */
-    public function __construct($type = DispatchToType::class)
+    public function __construct(string $type = DispatchToType2::class)
     {
         $this->type = $type;
     }
@@ -46,34 +46,45 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
     public function denormalize($data, $class, $format = null, array $context = array())
     {
         if (is_array($data) === false && $data instanceof \Traversable === false) {
-            return new \EmptyIterator();
-            /**
-             * @TODO how to log/inform about this error ?
-             * throw new \InvalidArgumentException(
-             * 'Data expected to be an array or a traversable, ' . gettype($data) . ' given.'
-            * );*/
+            return new \EmptyIterator(); // @TODO how to log/inform about this error ?
         }
 
-        $indexToExtract = null;
-        $keyToExtract   = null;
+        list ($indexToExtract, $keyToExtract) = $this->extractIndexAndKey($class);
 
-        if ($class !== 'collection[]') {
-            list ($indexToExtract, $keyToExtract) = $this->extractIndexAndKey($class);
+        if ($indexToExtract !== '') {
+            return $this->denormalizeWithKeyToExtract($data[$indexToExtract], $format, $context, $keyToExtract);
         }
 
-        foreach ($data as $index => &$value) {
-            $value = $this->denormalizer->denormalize($value, $this->type, $format, $context);
+        reset($data);
+        do {
+            list ($index, $value) = each($data);
+            $data[$index] = $this->denormalizeWithKeyToExtract($value, $format, $context, $keyToExtract);
+        } while ($index !== null);
 
-            if ($keyToExtract !== null) {
-                $value = $value[$keyToExtract];
-            }
+        return $data;
+    }
 
-            if ($indexToExtract !== null && $index == $indexToExtract) {
-                return $value;
-            }
+    /**
+     * @param mixed  $value
+     * @param string $format
+     * @param array  $context
+     * @param string $keyToExtract
+     *
+     * @return mixed
+     */
+    private function denormalizeWithKeyToExtract(
+        $value,
+        string $format,
+        array $context,
+        string $keyToExtract
+    ) {
+        $value = $this->denormalizer->denormalize($value, $this->type, $format, $context);
+
+        if ($keyToExtract !== '') {
+            $value = $value[$keyToExtract];
         }
 
-        return new \ArrayIterator($data);
+        return $value;
     }
 
     /**
@@ -102,12 +113,12 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
      */
     private function extractIndexAndKey(string $type)
     {
-        preg_match('/^collection\[(?<index>[^]]*)\](\[(?<key>.+)\])?$/', $type, $match);
-
-        if ($match['index'] === '') {
-            $match['index'] = null;
+        if ($type === 'collection[]') {
+            return ['', ''];
         }
 
-        return [$match['index'] ?? null, $match['key'] ?? null];
+        preg_match('/^collection\[(?<index>[^]]*)\](\[(?<key>.+)\])?$/', $type, $match);
+
+        return [$match['index'] ?? '', $match['key'] ?? ''];
     }
 }

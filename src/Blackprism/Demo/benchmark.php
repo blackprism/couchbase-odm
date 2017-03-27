@@ -1,4 +1,22 @@
 <?php
+#$toto = "bouh";
+$start = microtime(true);
+for ($i = 0; $i < 10000000; $i++) {
+if (isset($toto)) {
+}
+}
+$end = microtime(true);
+echo ($end - $start) . "\n";
+
+$start = microtime(true);
+for ($i = 0; $i < 10000000; $i++) {
+if (isset($toto) === true) {
+}
+}
+$end = microtime(true);
+echo ($end - $start) . "\n";
+
+die;
 
 use Blackprism\Demo\Model\City;
 use Blackprism\Demo\Model\Country;

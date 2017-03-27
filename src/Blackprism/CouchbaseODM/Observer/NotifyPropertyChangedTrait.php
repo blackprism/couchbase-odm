@@ -20,7 +20,7 @@ trait NotifyPropertyChangedTrait
     /**
      * @return bool
      */
-    public function isTracked()
+    public function isTracked(): bool
     {
         return $this->track;
     }
@@ -29,15 +29,15 @@ trait NotifyPropertyChangedTrait
      * Notify all observers with old and new values.
      *
      * @param string $propertyName
-     * @param mixed $oldValue
-     * @param mixed $newValue
+     * @param mixed  $oldValue
+     * @param mixed  $newValue
      *
-     * @return $this
+     * @return self
      */
-    private function propertyChanged(string $propertyName, $oldValue, $newValue)
+    private function propertyChanged(string $propertyName, $oldValue, $newValue): self
     {
-        if ($this->track === false) {
-            return;
+        if ($this->isTracked() === false) {
+            return $this;
         }
 
         if (isset($this->properties[$propertyName]) === false) {
@@ -55,7 +55,7 @@ trait NotifyPropertyChangedTrait
     /**
      * @return array
      */
-    public function getPropertiesChanged()
+    public function getPropertiesChanged(): array
     {
         return array_filter($this->properties, function ($item) {
             return $item[0] !== $item[1];

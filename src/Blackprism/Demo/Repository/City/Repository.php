@@ -2,78 +2,71 @@
 
 namespace Blackprism\Demo\Repository\City;
 
-use Blackprism\CouchbaseODM\Bucket;
+use Blackprism\CouchbaseODM\Bucket\Readable;
+use Blackprism\CouchbaseODM\Bucket\Invokable;
+use Blackprism\CouchbaseODM\Bucket\Readable\Get;
+use Blackprism\CouchbaseODM\Bucket\Readable\Query;
 use Blackprism\CouchbaseODM\Connection\ConnectionAwareInterface;
-use Blackprism\CouchbaseODM\Connection\ConnectionAwareTrait;
-use Blackprism\CouchbaseODM\Serializer\Denormalizer;
-use Blackprism\CouchbaseODM\Serializer\Decoder\MergePaths;
+use Blackprism\CouchbaseODM\Connection\ConnectionInterface;
 use Blackprism\CouchbaseODM\Serializer\Decoder\ArrayDecoder;
+use Blackprism\CouchbaseODM\Serializer\Decoder\MergePaths;
+use Blackprism\CouchbaseODM\Serializer\Denormalizer;
 use Blackprism\CouchbaseODM\Value\BucketName;
 use Blackprism\Demo\Repository\City;
 use Blackprism\Demo\Repository\Country;
 use Blackprism\Demo\Repository\Mayor;
 use Symfony\Component\Serializer\Encoder\JsonDecode;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\SerializerInterface;
 
 class Repository implements ConnectionAwareInterface
 {
-    use ConnectionAwareTrait;
-
     const BUCKET_NAME = 'odm-test';
 
-    /** @var Bucket */
+    /** @var Readable\Bucket */
     private $bucket;
 
     /**
-     * @return Bucket
+     * @var ConnectionInterface
      */
-    public function getBucket()
+    private $connection;
+
+    private $invoker;
+
+    public function __construct(Invokable $invoker)
+    {
+        $this->invoker = $invoker;
+    }
+
+    /**
+     * @param ConnectionInterface $connection
+     */
+    public function connectionIs(ConnectionInterface $connection)
+    {
+        $this->connection = $connection;
+    }
+
+    /**
+     * @return Readable\Bucket
+     */
+    public function getReadableBucket()
     {
         if ($this->bucket === null) {
-            $this->bucket = $this->connection->getBucket(new BucketName(self::BUCKET_NAME));
+            $this->bucket = $this->connection->getReadableBucket(new BucketName(self::BUCKET_NAME));
         }
 
         return $this->bucket;
     }
 
     /**
-     * @param string $type
-     * @param array $normalizers
-     * @param array $encoders
+     * @param string $id
      *
-     * @return SerializerInterface
-     */
-    public function getSerializer(string $type = '', array $normalizers = [], array $encoders = [])
-    {
-        $normalizers = [
-            new City\Configuration\Denormalizer(),
-            new City\Configuration\Normalizer(),
-            new Country\Configuration\Normalizer(),
-            new Mayor\Configuration\Normalizer()
-        ];
-
-        $encoders = [
-            new MergePaths('inutile'),
-            new ArrayDecoder(),
-            new JsonEncoder()
-        ];
-
-        $serializer = new Serializer($normalizers, $encoders);
-
-        return $serializer;
-    }
-
-    /**
-     * @param mixed $documentId
+     * @throws \Blackprism\CouchbaseODM\Exception\Exception
      *
      * @return object
-     * @throws \Blackprism\CouchbaseODM\Exception\Exception
      */
-    public function get($documentId)
+    public function get(string $id)
     {
-        $metaDoc = $this->getBucket()->get($documentId);
+        $metaDoc = $this->invoker->invokeReader(new Get($id), $this->getReadableBucket());
 
         $normalizers = [
             new Denormalizer\Collection(),
@@ -90,124 +83,6 @@ class Repository implements ConnectionAwareInterface
         return $serializer->deserialize($metaDoc->value(), 'city', 'json');
     }
 
-    /**
-     * @param object $object
-     */
-    public function save($object)
-    {
-        $documents = $this->getSerializer()->serialize($object, 'array');
-
-        foreach ($documents as $id => $document) {
-            $this->getBucket()->update($id, $document);
-        }
-    }
-
-    public function getJuice()
-    {
-        $n1ql = 'SELECT @juice FROM `odm-test` AS juice WHERE meta(@juice).id = "odwalla-juice1"';
-        $result = $this->getBucket()->query($n1ql);
-
-        return $this->getSerializer()->deserialize($result->rows(), Denormalizer\FirstObject::class, 'array');
-    }
-
-    public function getJuiceAsCity()
-    {
-        $n1ql = '
-            SELECT
-              @city,
-              meta(@city).id AS `city.id`,
-              @mayor AS `city.mayor`,
-              meta(@mayor).id AS `city.mayor.id`
-            FROM `odm-test` AS city
-            WHERE meta(@city).id = "odwalla-juice1"';
-
-        $result = $this->getBucket()->query($n1ql);
-
-        $dispatchToType = new Denormalizer\DispatchToType();
-        $dispatchToType->denormalizeTypelessWith(Denormalizer\Raw::class);
-
-        $normalizers = [
-            $dispatchToType,
-            new Denormalizer\FirstObject(),
-            new City\Configuration\Denormalizer(),
-            new Country\Configuration\Denormalizer(),
-        ];
-
-        $encoders = [
-            new ArrayDecoder(),
-        ];
-
-        $serializer = new Serializer($normalizers, $encoders);
-
-        return $serializer->deserialize($result->rows(), Denormalizer\FirstObject::class, 'array');
-    }
-
-    /**
-     * @return \Blackprism\Demo\Model\City
-     */
-    public function getCity1ByN1QL()
-    {
-        $n1ql = '
-            SELECT @city
-            FROM `odm-test` AS city
-            WHERE meta(@city).id = "city-1"';
-
-        $result = $this->getBucket()->query($n1ql);
-
-        $normalizers = [
-            new Denormalizer\DispatchToType(),
-            new City\Configuration\Denormalizer(),
-            new Country\Configuration\Denormalizer(),
-        ];
-
-        $encoders = [
-            new ArrayDecoder(),
-        ];
-
-        $serializer = new Serializer($normalizers, $encoders);
-
-        return $serializer->deserialize($result->rows(), Denormalizer\DispatchToType::class . '[0]', 'array');
-    }
-
-    public function getCityWithMayor($id)
-    {
-        $n1ql = '
-            SELECT
-              OBJECT_CONCAT(
-                @city,
-                {
-                  meta(@city).id,
-                  "mayor": OBJECT_CONCAT(
-                    @mayor,
-                    {
-                      meta(@mayor).id
-                    }
-                  )
-                }
-              ) as city
-            FROM `odm-test` AS city
-            JOIN `odm-test` AS mayor ON KEYS city.mayorId
-            WHERE mayor.`internal-type` = "mayor"
-              AND meta(@city).id = "' . $id . '"';
-
-        $result = $this->getBucket()->query($n1ql);
-
-        $normalizers = [
-            new Denormalizer\DispatchToType('internal-type'),
-            new City\Configuration\Denormalizer(),
-            new City\Configuration\Denormalizer(),
-            new Country\Configuration\Denormalizer(),
-            new Mayor\Configuration\Denormalizer()
-        ];
-
-        $encoders = [
-            new ArrayDecoder(),
-        ];
-
-        $serializer = new Serializer($normalizers, $encoders);
-
-        return $serializer->deserialize($result->rows(), Denormalizer\DispatchToType::class . '[0]', 'array');
-    }
 
     public function getCitiesWithMayor()
     {
@@ -230,10 +105,12 @@ class Repository implements ConnectionAwareInterface
             WHERE city.type = "city" AND mayor.type = "mayor"
             ORDER BY city.name';
 
-        $result = $this->getBucket()->query($n1ql);
+        $result = $this->invoker->invokeReader(new Query($n1ql), $this->getReadableBucket());
 
         $normalizers = [
             new Denormalizer\DispatchToType(),
+            new Denormalizer\Collection(),
+            new Denormalizer\DispatchToType2(),
             new Denormalizer\Collection(),
             new City\Configuration\Denormalizer(),
             new City\Configuration\Denormalizer(),
@@ -247,8 +124,9 @@ class Repository implements ConnectionAwareInterface
 
         $serializer = new Serializer($normalizers, $encoders);
 
-        return $serializer->deserialize($result->rows(), 'collection[][city]', 'array');
+        return $serializer->deserialize($result->rows(), 'collection[1][city]', 'array');
     }
+
 
     public function getCitiesWithMayorAndMergePath()
     {
@@ -263,7 +141,7 @@ class Repository implements ConnectionAwareInterface
             WHERE city.type = "city" AND mayor.type = "mayor"
             ORDER BY city.name';
 
-        $result = $this->getBucket()->query($n1ql);
+        $result = $this->invoker->invokeReader(new Query($n1ql), $this->getReadableBucket());
 
         $normalizers = [
             new Denormalizer\DispatchToType(),

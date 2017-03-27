@@ -6,30 +6,31 @@ namespace Blackprism\CouchbaseODM\Value;
 
 /**
  * DocumentId
+ * @TODO à supprimer trop lent
  */
 final class DocumentId
 {
     /**
      * @var string
      */
-    private $id;
+    private $identifier;
 
     /**
-     * @param string $id
+     * @param string $identifier
      *
      * @throws \InvalidArgumentException
      */
-    public function __construct(string $id)
+    public function __construct(string $identifier)
     {
-        if (mb_check_encoding($id, 'UTF-8') === false) {
-            throw new \InvalidArgumentException($id . ' is not a valid UTF-8 encoding');
+        if (mb_check_encoding($identifier, 'UTF-8') === false) {
+            throw new \InvalidArgumentException($identifier . ' is not a valid UTF-8 encoding');
         }
 
-        if (mb_strlen($id, 'ASCII') > 250) {
-            throw new \InvalidArgumentException($id . ' max length is 250 bytes');
+        if (mb_strlen($identifier, 'ASCII') > 250) {
+            throw new \InvalidArgumentException($identifier . ' max length is 250 bytes');
         }
 
-        $this->id = $id;
+        $this->identifier = $identifier;
     }
 
     /**
@@ -37,6 +38,6 @@ final class DocumentId
      */
     public function value(): string
     {
-        return $this->id;
+        return $this->identifier;
     }
 }

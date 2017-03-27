@@ -39,7 +39,7 @@ class Normalizer implements NormalizerAwareInterface, NormalizerInterface
 
     public function supportsNormalization($data, $format = null)
     {
-        if (is_object($data) === true && get_class($data) === Model\Country::class) {
+        if ($format === null && is_object($data) === true && get_class($data) === Model\Country::class) {
             return true;
         }
 

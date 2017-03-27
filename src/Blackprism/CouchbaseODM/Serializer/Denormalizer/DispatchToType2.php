@@ -12,7 +12,7 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 /**
  * DispatchToType
  */
-class DispatchToType implements DenormalizerAwareInterface, DenormalizerInterface
+class DispatchToType2 implements DenormalizerAwareInterface, DenormalizerInterface
 {
 
     use DenormalizerAwareTrait;
@@ -61,16 +61,36 @@ class DispatchToType implements DenormalizerAwareInterface, DenormalizerInterfac
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        $dataFilteredByKey = new FilterByKey(new ArrayIterator($data));
-
-        if (isset($context['key']) === true) {
-            $dataFilteredByKey->keyIs($context['key']);
+        if (is_array($data) === false) {
+            return $data;
         }
 
-        // @TODO C'est vraiment opti ça ?
-        $denormalizeIterator = new DenormalizeIterator($dataFilteredByKey, $this->denormalizer, $this->typeProperty);
+        foreach ($data as $key => &$element) {
+            $element = $this->denormalizer->denormalize(
+                $element,
+                $this->getClassForElement($element),
+                $format,
+                $context
+            );
+        }
+        return $data;
+    }
 
-        return $denormalizeIterator;
+    /**
+     * @param array $element
+     *
+     * @return string
+     */
+    private function getClassForElement(array $element): string
+    {
+        if (isset($element[$this->typeProperty]) === true) {
+            return $element[$this->typeProperty];
+        }
+
+        // @TODO pas encore géré le typeless
+        //$class = $this->typelessDenormalizer;
+        var_dump("Pas trouvé de type", $this->typeProperty, $element);
+        die;
     }
 
     /**

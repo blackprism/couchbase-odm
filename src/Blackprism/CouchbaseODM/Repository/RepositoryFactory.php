@@ -4,7 +4,6 @@ namespace Blackprism\CouchbaseODM\Repository;
 
 use Blackprism\CouchbaseODM\Connection\ConnectionAwareInterface;
 use Blackprism\CouchbaseODM\Connection\ConnectionInterface;
-use Blackprism\CouchbaseODM\Value\ClassName;
 
 /**
  * RepositoryFactory
@@ -33,24 +32,21 @@ final class RepositoryFactory
     }
 
     /**
-     * @param ClassName $className
+     * @param object $repository
      *
      * @return object
      */
-    public function get(ClassName $className)
+    public function get($repository)
     {
-        if (isset($this->repositories[$className->value()]) === true) {
-            return $this->repositories[$className->value()];
+        if (isset($this->repositories[get_class($repository)]) === true) {
+            return $this->repositories[get_class($repository)];
         }
-
-        $fqcn = $className->value();
-        $repository = new $fqcn();
 
         if ($repository instanceof ConnectionAwareInterface) {
             $repository->connectionIs($this->connection);
         }
 
-        $this->repositories[$className->value()] = $repository;
+        $this->repositories[get_class($repository)] = $repository;
 
         return $repository;
     }

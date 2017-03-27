@@ -4,7 +4,8 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM\Connection;
 
-use Blackprism\CouchbaseODM\Bucket;
+use Blackprism\CouchbaseODM\Bucket\Readable;
+use Blackprism\CouchbaseODM\Bucket\Writable;
 use Blackprism\CouchbaseODM\Value\BucketName;
 
 /**
@@ -15,7 +16,14 @@ interface ConnectionInterface
     /**
      * @param BucketName $bucketName
      *
-     * @return Bucket
+     * @return Readable\Bucket
      */
-    public function getBucket(BucketName $bucketName): Bucket;
+    public function getReadableBucket(BucketName $bucketName): Readable\Bucket;
+
+    /**
+     * @param BucketName $bucketName
+     *
+     * @return Writable\Bucket
+     */
+    public function getWritableBucket(BucketName $bucketName): Writable\Bucket;
 }

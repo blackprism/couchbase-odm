@@ -4,9 +4,11 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM\Connection;
 
-use Blackprism\CouchbaseODM\Bucket;
+use Blackprism\CouchbaseODM\Bucket\Readable;
+use Blackprism\CouchbaseODM\Bucket\Writable;
 use Blackprism\CouchbaseODM\Value\BucketName;
 use Blackprism\CouchbaseODM\Value\Dsn;
+use Couchbase;
 
 /**
  * Connection
@@ -29,7 +31,7 @@ final class Connection implements ConnectionInterface
     private $password;
 
     /**
-     * @var \CouchbaseCluster
+     * @var \CouchbaseCluster|null
      */
     private $connection;
 
@@ -45,11 +47,23 @@ final class Connection implements ConnectionInterface
         $this->password = $password;
     }
 
-    private function getConnection()
+    /**
+     * @param BucketName $bucketName
+     * @param string     $password
+     *
+     * @return \CouchbaseCluster
+     */
+    private function getConnectionForBucket(BucketName $bucketName, string $password = '')
     {
         if ($this->connection === null) {
             echo "La connexion est réellement faite !\n";
-            $this->connection = new \CouchbaseCluster($this->dsn->value(), $this->username, $this->password);
+            $this->connection = new Couchbase\Cluster($this->dsn->value());
+        }
+
+        if ($password !== '') {
+            $authenticator = new Couchbase\ClassicAuthenticator();
+            $authenticator->bucket($bucketName->value(), $password);
+            $this->connection->authenticate($authenticator);
         }
 
         return $this->connection;
@@ -57,13 +71,27 @@ final class Connection implements ConnectionInterface
 
     /**
      * @param BucketName $bucketName
+     * @param string     $password
      *
-     * @return Bucket
+     * @return Readable\Bucket
      */
-    public function getBucket(BucketName $bucketName): Bucket
+    public function getReadableBucket(BucketName $bucketName, string $password = ''): Readable\Bucket
     {
-        $couchbaseBucket = $this->getConnection()->openBucket($bucketName->value());
+        $couchbaseBucket = $this->getConnectionForBucket($bucketName, $password)->openBucket($bucketName->value());
 
-        return new Bucket($couchbaseBucket);
+        return new Readable\Bucket($couchbaseBucket);
+    }
+
+    /**
+     * @param BucketName $bucketName
+     * @param string     $password
+     *
+     * @return Writable\Bucket
+     */
+    public function getWritableBucket(BucketName $bucketName, string $password = ''): Writable\Bucket
+    {
+        $couchbaseBucket = $this->getConnectionForBucket($bucketName, $password)->openBucket($bucketName->value());
+
+        return new Writable\Bucket($couchbaseBucket);
     }
 }

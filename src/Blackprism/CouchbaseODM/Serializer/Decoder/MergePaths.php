@@ -4,8 +4,10 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM\Serializer\Decoder;
 
+use ArrayIterator;
 use Symfony\Component\Serializer\Encoder\DecoderInterface;
 use Symfony\Component\Serializer\Exception\UnexpectedValueException;
+use Traversable;
 
 /**
  * MergePaths
@@ -66,7 +68,41 @@ class MergePaths implements ChainableInterface
     }
 
     /**
-     * Merge composed keys like city.id in city, city.country.president into city and country
+     * @param array  $values
+     * @param string $key
+     *
+     * @return array
+     */
+    private function mergeWhenKeyIsComposed(array $values, string $key): array
+    {
+        if (strpos($key, '.') !== false) {
+            return $this->merge($values);
+        }
+
+        return $values;
+    }
+
+    /**
+     * @param array  $values
+     * @param string $key
+     * @param array  $valuesToAppend
+     *
+     * @return array
+     */
+    private function appendOrReplaceForKey(array $values, string $key, array $valuesToAppend): array
+    {
+        if (isset($values[$key]) === true) {
+            $values[$key] = array_replace($values[$key], $valuesToAppend);
+            return $values;
+        }
+
+        $values[$key] = $valuesToAppend;
+
+        return $values;
+    }
+
+    /**
+     * Explode composed keys like city.id in city['id]', city.country.president into city['country']['president']
      *
      * @param array $values
      *
@@ -74,23 +110,12 @@ class MergePaths implements ChainableInterface
      */
     private function merge(array $values)
     {
-        foreach ($values as $key => $value) {
-            // Composed key
-            $subKey = explode('.', $key, 2);
+        foreach ((new KeepComposedKey(new ArrayIterator($values))) as $key => $value) {
+            list($mainKey, $subKey) = explode('.', $key, 2);
 
-            if ($subKey !== [$key]) {
-                if (isset($values[$subKey[0]][$subKey[1]]) === true
-                    && is_array($values[$subKey[0]][$subKey[1]]) === true) {
-                    $values[$subKey[0]][$subKey[1]] = array_replace($values[$subKey[0]][$subKey[1]], $values[$key]);
-                } else {
-                    $values[$subKey[0]][$subKey[1]] = $values[$key];
-                }
-                unset($values[$key]);
-
-                if (strpos($subKey[1], '.') !== false) {
-                    $values[$subKey[0]] = $this->merge($values[$subKey[0]]);
-                }
-            }
+            $subValues = $this->mergeWhenKeyIsComposed([$subKey => $value], $subKey);
+            $values = $this->appendOrReplaceForKey($values, $mainKey, $subValues);
+            unset($values[$key]);
         }
 
         return $values;
@@ -114,10 +139,17 @@ class MergePaths implements ChainableInterface
      */
     public function decode($data, $format, array $context = array())
     {
-        if (is_array($data) === true || $data instanceof \Traversable) {
-            foreach ($data as &$item) {
+        // @TODO bizarre le type hint est string et on dit que ça peut être un array un objet ou autre ?!
+        if (is_array($data) === true) {
+            array_walk($data, function (&$item) {
                 $item = $this->merge($item);
-            }
+            });
+        }
+
+        if ($data instanceof Traversable) {
+            iterator_apply($data, function (&$item) {
+                $item = $this->merge($item);
+            });
         }
 
         return $this->next($data, $format, $context);

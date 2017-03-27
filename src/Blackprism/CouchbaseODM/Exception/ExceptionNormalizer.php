@@ -7,10 +7,11 @@ namespace Blackprism\CouchbaseODM\Exception;
 use Blackprism\CouchbaseODM\Exception\Bucket\KeyAlreadyExist;
 use Blackprism\CouchbaseODM\Exception\Bucket\NoSuchKey;
 use Blackprism\CouchbaseODM\Exception\Bucket\Unknown;
+use Couchbase;
 
 class ExceptionNormalizer
 {
-    public static function normalize(\CouchbaseException $exception): Exception
+    public static function normalize(Couchbase\Exception $exception): Exception
     {
         switch ($exception->getCode()) {
             case COUCHBASE_KEY_ENOENT:
