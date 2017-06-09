@@ -1,18 +1,21 @@
 <?php
 
-namespace Blackprism\Demo\Repository\Mayor;
+namespace Blackprism\Demo\Repository\City;
 
+use Blackprism\CouchbaseODM\Bucket\CanInvoke;
 use Blackprism\CouchbaseODM\Bucket\Provider;
 use Blackprism\CouchbaseODM\Bucket\ProviderAware;
+use Blackprism\CouchbaseODM\Bucket\Readable;
+use Blackprism\CouchbaseODM\Bucket\Readable\Query;
 use Blackprism\CouchbaseODM\Repository\MappingFactory;
 use Blackprism\CouchbaseODM\Repository\MappingFactoryAware;
 use Blackprism\CouchbaseODM\Serializer\Decoder\ArrayDecoder;
 use Blackprism\CouchbaseODM\Serializer\Denormalizer;
 use Blackprism\CouchbaseODM\Value\BucketName;
-use Blackprism\CouchbaseODM\Bucket\Readable;
+use Blackprism\Demo\Repository\Mayor;
 use Symfony\Component\Serializer\Serializer;
 
-class Repository implements ProviderAware, MappingFactoryAware
+class SmallRepository implements ProviderAware, MappingFactoryAware
 {
     const BUCKET_NAME = 'odm-test';
 
@@ -41,31 +44,26 @@ class Repository implements ProviderAware, MappingFactoryAware
         return $this->bucketProvider->getReadableBucket(new BucketName(self::BUCKET_NAME));
     }
 
-    public function getMayors()
+    public function getCitiesAndMayorAndMapping()
     {
         $n1ql = '
-            SELECT
-              meta(@mayor).id AS `mayor.id`,
-              @mayor
-            FROM `odm-test` AS mayor
-            WHERE mayor.type = "mayor"
-            ORDER BY mayor.firstname';
+            SELECT *
+            FROM `odm-test` AS city
+            LEFT JOIN `odm-test` AS mayor ON KEYS city.mayorId
+            WHERE city.type = "city" AND mayor.type = "mayor"
+            ORDER BY city.name';
 
-        $result = (new Readable\Query($n1ql))->execute($this->getReadableBucket());
-
+        $result = (new Query($n1ql))->execute($this->getReadableBucket());
 
         $normalizers = [
             new Denormalizer\Collection(),
             new Denormalizer\Mapping(
-                $this->mappingFactory->get(MappingDefinition::class)
+                $this->mappingFactory->get(MappingDefinition::class),
+                $this->mappingFactory->get(Mayor\MappingDefinition::class)
             )
         ];
 
-        $encoders = [
-            new ArrayDecoder(),
-        ];
-
-        $serializer = new Serializer($normalizers, $encoders);
+        $serializer = new Serializer($normalizers, [new ArrayDecoder()]);
 
         return $serializer->deserialize($result->rows(), 'collection[mayor]', 'array');
     }

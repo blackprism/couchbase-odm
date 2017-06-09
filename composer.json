@@ -17,12 +17,12 @@
         "phing/phing": "^2.0",
         "phpmd/phpmd": "^2.0",
         "sebastian/phpcpd": "^2.0",
-        "squizlabs/php_codesniffer": "3.0.0RC4 as 3.0",
+        "squizlabs/php_codesniffer": "dev-master",
         "atoum/atoum": "^2.6",
         "atoum/stubs": "^2.5",
         "vimeo/psalm": "dev-master",
-        "object-calisthenics/phpcs-calisthenics-rules": "dev-master as 2.0",
-        "phpstan/phpstan": "^0.6.4"
+        "object-calisthenics/phpcs-calisthenics-rules": "dev-master",
+        "phpstan/phpstan": "^0.7"
     },
     "config": {
         "bin-dir": "bin"

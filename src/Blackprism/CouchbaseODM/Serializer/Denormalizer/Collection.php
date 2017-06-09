@@ -23,12 +23,7 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
      */
     private $type;
 
-    /**
-     * Collection constructor.
-     *
-     * @param string $type type to use for output of denormalize
-     */
-    public function __construct(string $type = DispatchToType2::class)
+    public function __construct(string $type = Mapping::class)
     {
         $this->type = $type;
     }
@@ -49,17 +44,11 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
             return new \EmptyIterator(); // @TODO how to log/inform about this error ?
         }
 
-        list ($indexToExtract, $keyToExtract) = $this->extractIndexAndKey($class);
+        $keyToExtract = $this->extractIndexAndKey($class);
 
-        if ($indexToExtract !== '') {
-            return $this->denormalizeWithKeyToExtract($data[$indexToExtract], $format, $context, $keyToExtract);
+        foreach ($data as $key => $datum) {
+            $data[$key] = $this->denormalizeWithKeyToExtract($datum, $format, $context, $keyToExtract);
         }
-
-        reset($data);
-        do {
-            list ($index, $value) = each($data);
-            $data[$index] = $this->denormalizeWithKeyToExtract($value, $format, $context, $keyToExtract);
-        } while ($index !== null);
 
         return $data;
     }
@@ -72,12 +61,8 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
      *
      * @return mixed
      */
-    private function denormalizeWithKeyToExtract(
-        $value,
-        string $format,
-        array $context,
-        string $keyToExtract
-    ) {
+    private function denormalizeWithKeyToExtract($value, string $format, array $context, string $keyToExtract)
+    {
         $value = $this->denormalizer->denormalize($value, $this->type, $format, $context);
 
         if ($keyToExtract !== '') {
@@ -106,19 +91,14 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
         return false;
     }
 
-    /**
-     * @param string $type
-     *
-     * @return string[]
-     */
-    private function extractIndexAndKey(string $type)
+    private function extractIndexAndKey(string $type): string
     {
         if ($type === 'collection[]') {
-            return ['', ''];
+            return '';
         }
 
-        preg_match('/^collection\[(?<index>[^]]*)\](\[(?<key>.+)\])?$/', $type, $match);
+        $leftSquareBracketPosition = strpos($type, '[');
 
-        return [$match['index'] ?? '', $match['key'] ?? ''];
+        return substr($type, 1+$leftSquareBracketPosition, strpos($type, ']')-$leftSquareBracketPosition-1);
     }
 }

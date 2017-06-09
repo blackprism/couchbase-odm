@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Blackprism\Couchbase\Repository;
 
 use Blackprism\CouchbaseODM\Value\ClassName;

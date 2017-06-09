@@ -4,15 +4,13 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM\Bucket\Writable;
 
-use Blackprism\CouchbaseODM\Bucket\Bucket;
-use Blackprism\CouchbaseODM\Bucket\Executable;
 use Blackprism\CouchbaseODM\Exception\Exception;
 use Blackprism\CouchbaseODM\Value\Couchbase\MetaDoc;
 
 /**
  * Replace
  */
-final class Replace extends Common implements Executable
+final class Replace extends Common implements Writable
 {
     /**
      * @param Bucket $bucket

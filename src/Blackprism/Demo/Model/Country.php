@@ -12,6 +12,7 @@ class Country implements NotifyPropertyChangedInterface
     use NotifyPropertyChangedTrait;
 
     private $name = '';
+    private $geo = null;
 
     public function setName(string $name)
     {
@@ -22,5 +23,17 @@ class Country implements NotifyPropertyChangedInterface
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function setGeo(Geo $geo)
+    {
+        $geo = clone $geo;
+        $this->propertyChanged('geo', $this->geo, $geo);
+        $this->geo = $geo;
+    }
+
+    public function getGeo()
+    {
+        return $this->geo;
     }
 }

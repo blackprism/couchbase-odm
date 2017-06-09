@@ -9,7 +9,6 @@ use Blackprism\CouchbaseODM\Observer\NotifyPropertyChangedTrait;
 
 class City implements NotifyPropertyChangedInterface
 {
-
     use NotifyPropertyChangedTrait;
 
     private $id = null;
@@ -58,17 +57,14 @@ class City implements NotifyPropertyChangedInterface
 
     public function setGeo(Geo $geo)
     {
+        $geo = clone $geo;
         $this->propertyChanged('geo', $this->geo, $geo);
         $this->geo = $geo;
     }
 
     public function getGeo()
     {
-        if ($this->geo === null) {
-            return null;
-        }
-
-        return clone $this->geo;
+        return $this->geo;
     }
 
     public function setMayor(Mayor $mayor)

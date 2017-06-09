@@ -4,15 +4,15 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM\Bucket\Readable\Bulk;
 
-use Blackprism\CouchbaseODM\Bucket\Bucket;
-use Blackprism\CouchbaseODM\Bucket\Executable;
+use Blackprism\CouchbaseODM\Bucket\Readable\Bucket;
+use Blackprism\CouchbaseODM\Bucket\Readable\Readable;
 use Blackprism\CouchbaseODM\Exception\Exception;
 use Blackprism\CouchbaseODM\Value\Couchbase\MetaDoc;
 
 /**
  * GetMulti
  */
-final class GetMulti extends Common implements Executable
+final class GetMulti extends Common implements Readable
 {
     /**
      * @param Bucket $bucket

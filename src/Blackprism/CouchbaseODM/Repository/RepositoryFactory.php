@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types = 1);
+
 namespace Blackprism\CouchbaseODM\Repository;
 
-use Blackprism\CouchbaseODM\Connection\ConnectionAwareInterface;
-use Blackprism\CouchbaseODM\Connection\ConnectionInterface;
+use Blackprism\CouchbaseODM\Bucket\ProviderAware;
+use Blackprism\CouchbaseODM\Bucket\Provider;
 
 /**
  * RepositoryFactory
@@ -12,38 +14,47 @@ final class RepositoryFactory
 {
 
     /**
-     * @var ConnectionInterface
+     * @var Provider
      */
-    private $connection;
+    private $bucketPool;
 
     /**
-     * @var object[]
+     * @var MappingFactory
+     */
+    private $mappingFactory;
+
+    /**
+     * @var ProviderAware[]
      */
     private $repositories = [];
 
     /**
      * RepositoryFactory constructor.
      *
-     * @param ConnectionInterface $connection
+     * @param Provider       $pool
+     * @param MappingFactory $mappingFactory
      */
-    public function __construct(ConnectionInterface $connection)
+    public function __construct(Provider $pool, MappingFactory $mappingFactory)
     {
-        $this->connection = $connection;
+        $this->bucketPool     = $pool;
+        $this->mappingFactory = $mappingFactory;
     }
 
     /**
-     * @param object $repository
+     * @param ProviderAware $repository
      *
-     * @return object
+     * @return ProviderAware
      */
-    public function get($repository)
+    public function get(ProviderAware $repository)
     {
         if (isset($this->repositories[get_class($repository)]) === true) {
             return $this->repositories[get_class($repository)];
         }
 
-        if ($repository instanceof ConnectionAwareInterface) {
-            $repository->connectionIs($this->connection);
+        $repository->providerIs($this->bucketPool);
+
+        if ($repository instanceof MappingFactoryAware) {
+            $repository->mappingFactoryIs($this->mappingFactory);
         }
 
         $this->repositories[get_class($repository)] = $repository;

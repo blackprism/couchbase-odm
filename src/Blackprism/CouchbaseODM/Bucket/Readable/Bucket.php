@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM\Bucket\Readable;
 
+use Blackprism\CouchbaseODM\Bucket\transcodersAware;
 use Blackprism\CouchbaseODM\Exception\Bucket\OperationNotFound;
 use Blackprism\CouchbaseODM\Exception\Exception;
 use Blackprism\CouchbaseODM\Value\Couchbase\MetaDoc;
@@ -14,7 +15,7 @@ use Couchbase;
 /**
  * Bucket
  */
-final class Bucket
+final class Bucket implements transcodersAware
 {
     /**
      * @var Couchbase\Bucket
@@ -52,7 +53,7 @@ final class Bucket
      *
      * @return Couchbase\N1qlQuery
      */
-    private function getN1qlQueryFromString(string $query, array $options = [])
+    private function getN1qlQueryFromString(string $query, array $options = []): Couchbase\N1qlQuery
     {
         if ($options === []) {
             return Couchbase\N1qlQuery::fromString($query);

@@ -2,28 +2,16 @@
 
 declare(strict_types = 1);
 
-namespace Blackprism\CouchbaseODM\Connection;
+namespace Blackprism\CouchbaseODM\Bucket;
 
 use Blackprism\CouchbaseODM\Bucket\Readable;
 use Blackprism\CouchbaseODM\Bucket\Writable;
 use Blackprism\CouchbaseODM\Value\BucketName;
+use Blackprism\CouchbaseODM\Value\BucketSetting;
 
-/**
- * Interface Connection
- */
-interface ConnectionInterface
+interface Provider
 {
-    /**
-     * @param BucketName $bucketName
-     *
-     * @return Readable\Bucket
-     */
+    public function bucketSettings(BucketSetting ...$bucketSettings): Provider;
     public function getReadableBucket(BucketName $bucketName): Readable\Bucket;
-
-    /**
-     * @param BucketName $bucketName
-     *
-     * @return Writable\Bucket
-     */
     public function getWritableBucket(BucketName $bucketName): Writable\Bucket;
 }

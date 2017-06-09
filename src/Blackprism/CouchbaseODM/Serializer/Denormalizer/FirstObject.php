@@ -4,6 +4,7 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM\Serializer\Denormalizer;
 
+use Blackprism\CouchbaseODM\Serializer\Decoder\MergePaths;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;

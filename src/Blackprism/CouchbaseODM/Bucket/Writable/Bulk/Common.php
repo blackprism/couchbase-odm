@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM\Bucket\Writable\Bulk;
 
-use Blackprism\CouchbaseODM\Bucket\Bucket;
+use Blackprism\CouchbaseODM\Bucket\Writable\Bucket;
 use Blackprism\CouchbaseODM\Exception\Exception;
 use Blackprism\CouchbaseODM\Value\Couchbase\MetaDoc;
 use Blackprism\CouchbaseODM\Value\StringCollection;

@@ -4,15 +4,15 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM\Bucket\Writable\Bulk;
 
-use Blackprism\CouchbaseODM\Bucket\Bucket;
-use Blackprism\CouchbaseODM\Bucket\Executable;
+use Blackprism\CouchbaseODM\Bucket\Writable\Bucket;
+use Blackprism\CouchbaseODM\Bucket\Writable\Writable;
 use Blackprism\CouchbaseODM\Exception\Exception;
 use Blackprism\CouchbaseODM\Value\Couchbase\MetaDoc;
 
 /**
  * AppendMultiple
  */
-final class AppendMultiple extends Common implements Executable
+final class AppendMultiple extends Common implements Writable
 {
     /**
      * @param Bucket $bucket

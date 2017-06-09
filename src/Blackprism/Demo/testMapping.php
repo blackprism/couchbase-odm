@@ -5,11 +5,10 @@ namespace Blackprism\Demo;
 require_once '../../../vendor/autoload.php';
 
 use Blackprism\CouchbaseODM\Bucket\Pool;
-use Blackprism\CouchbaseODM\Connection;
 use Blackprism\CouchbaseODM\Observer\PropertyChangedListener;
 use Blackprism\CouchbaseODM\Observer\PropertyChangedListenerAwareInterface;
-use Blackprism\CouchbaseODM\Repository\MappingFactory;
 use Blackprism\CouchbaseODM\Repository\RepositoryFactory;
+use Blackprism\CouchbaseODM\Repository\MappingFactory;
 use Blackprism\CouchbaseODM\Serializer\SerializerFactory;
 use Blackprism\CouchbaseODM\Value\BucketName;
 use Blackprism\CouchbaseODM\Value\BucketSetting;
@@ -42,7 +41,8 @@ $result = $bucket->query('select city.name as city, country.name as country from
 */
 //var_dump($bucket->deserializeCollection($result, new Deserialize($configuration2), new ClassName(Flatten::class)));
 
-
+//$connection = new Connection\Connection(new Dsn('couchbase://localhost'));
+//echo "Connection defined\n";
 
 $pool = new Pool();
 $pool->bucketSettings(new BucketSetting(new Dsn('couchbase://localhost'), new BucketName('odm-test'), 'toto'));
@@ -54,22 +54,22 @@ echo "MappingFactory created\n";
 $repositoryFactory = new RepositoryFactory($pool, $mappingFactory);
 echo "RepositoryFactory created\n";
 
-$cityBucketWithConnection = $repositoryFactory->get(new \Blackprism\Demo\Repository\City\Repository());
-$mayorRepository = $repositoryFactory->get(new Mayor\Repository());
 
-var_dump($mayorRepository->getMayors());
-die;
+$cityBucketWithConnection = $repositoryFactory->get(new \Blackprism\Demo\Repository\City\SmallRepository());
 
+/*
 $city1 = $cityBucketWithConnection->get('city-1');
-
 var_dump($city1);
+exit;
+*/
 
 echo "-----\n";
-//$result = $cityBucketWithConnection->getCitiesWithMayor();
-$result = $cityBucketWithConnection->getCitiesWithMayorAndMergePath();
-var_dump($result);
-foreach ($result as $truc) {
-    var_dump($truc);
+$data = $cityBucketWithConnection->getCitiesAndMayorAndMapping();
+foreach ($data as $datum) {
+    echo str_repeat('-', 100) . "\n";
+    $datum->setFirstname("ANNE");
+    $datum->setLastname("HIDALGO");
+    var_dump($datum);
 }
 die;
 
@@ -103,7 +103,6 @@ die;
 //    var_dump($city);
 //}
 //die;
-
 echo "Ask cities with mayor\n";
 $cities = $cityRepository->getCitiesWithMayor();
 foreach ($cities as $city) {
@@ -131,6 +130,8 @@ die;
 
 
 
+$mayorRepository = $repositoryFactory->get(new ClassName(Mayor\Repository::class));
+$mayorRepository->connectionIs($connection);
 
 //try {
 //    var_dump($mayorRepository->getMayors());
