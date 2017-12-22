@@ -12,19 +12,6 @@ use RuntimeException;
 interface IsMapping
 {
     /**
-     * @param string $root
-     *
-     * @return self
-     */
-    public function rootIs(string $root): self;
-
-    /**
-     *
-     * @return string
-     */
-    public function getRoot(): string;
-
-    /**
      * @param string $class
      *
      * @return self
@@ -39,6 +26,14 @@ interface IsMapping
 
     /**
      * @param string $property
+     * @param string $value
+     *
+     * @return self
+     */
+    public function propertyTypeIs(string $property, string $value): self;
+
+    /**
+     * @param string $property
      * @param string $setterMethod
      * @param string $getterMethod
      *
@@ -47,19 +42,19 @@ interface IsMapping
     public function propertyHasAccessors(string $property, string $setterMethod, string $getterMethod): self;
 
     /**
-     * @param string $property
-     * @param self $mapping
-     * @param string $setterMethod
-     * @param string $getterMethod
+     * @param string    $property
+     * @param IsMapping $mapping
+     * @param string    $setterMethod
+     * @param string    $getterMethod
      *
-     * @return self
+     * @return IsMapping
      */
     public function propertyHasMappingAndAccessors(
-        string $property,
-        self $mapping,
-        string $setterMethod,
-        string $getterMethod
-    ): self;
+        string    $property,
+        IsMapping $mapping,
+        string    $setterMethod,
+        string    $getterMethod
+    ): IsMapping;
 
     /**
      * @param string $property
@@ -77,6 +72,13 @@ interface IsMapping
      * @return bool
      */
     public function propertyHasMapping(string $property): bool;
+
+    /**
+     * @todo Mettre un meilleur format de retour que array
+     *
+     * @return array
+     */
+    public function getPropertyType(): array;
 
     /**
      * @param string $property

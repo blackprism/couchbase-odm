@@ -15,7 +15,7 @@ final class MappingFactory
     private $mappings = [];
 
     /**
-     * @param string
+     * @param string $mappingClassName
      *
      * @return IsMapping
      */

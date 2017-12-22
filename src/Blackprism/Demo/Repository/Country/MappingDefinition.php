@@ -15,8 +15,8 @@ class MappingDefinition implements GiveMapping
     {
         $mapping = new Mapping();
         $mapping
-            ->rootIs('country')
             ->classIs(Country::class)
+            ->propertyTypeIs('type', 'country')
             ->propertyHasAccessors('name', 'setName', 'getName')
             ->propertyHasMappingAndAccessors(
                 'geo',

@@ -29,7 +29,7 @@ class Mapping implements DenormalizerAwareInterface, DenormalizerInterface
     /**
      * Collection constructor.
      *
-     * @param IsMapping[] $mapping
+     * @param IsMapping[int] $mapping
      */
     public function __construct(IsMapping... $mapping)
     {
@@ -103,7 +103,9 @@ class Mapping implements DenormalizerAwareInterface, DenormalizerInterface
 
         foreach ($data as $objectKeyName => $values) {
             foreach ($this->mappings as $mapping) {
-                if ($objectKeyName === $mapping->getRoot()) {
+                $propertyType = $mapping->getPropertyType();
+                if (isset($values[$propertyType['property']]) === true
+                    && $values[$propertyType['property']] === $propertyType['value']) {
                     $newData[$objectKeyName] = $this->mapValuesToObject($values, $mapping);
                 }
             }

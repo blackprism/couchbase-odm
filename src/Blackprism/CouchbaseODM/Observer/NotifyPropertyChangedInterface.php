@@ -18,4 +18,25 @@ interface NotifyPropertyChangedInterface
      * @return bool
      */
     public function isTracked(): bool;
+
+    /**
+     * Get properties changed
+     *
+     * @return array
+     */
+    public function getPropertiesChanged(): array;
+
+    /**
+     * Get original properties value
+     *
+     * @return array
+     */
+    public function getOriginalPropertiesValue(): array;
+
+    /**
+     * Get current properties value
+     *
+     * @return array
+     */
+    public function getCurrentPropertiesValue(): array;
 }

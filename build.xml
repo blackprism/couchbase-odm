@@ -9,24 +9,17 @@
         <phingcall target="phpcs" />
         <phingcall target="phplint" />
         <phingcall target="phpmd" />
+        <phingcall target="phpcpd" />
         <!--<phingcall target="test" />-->
     </target>
 
     <target name="phpcs">
-        <autoloader autoloaderpath="./vendor/squizlabs/php_codesniffer/autoload.php" />
-
-        <phpcodesniffer
-                standard="PSR2"
-                showSniffs="true"
-                showWarnings="true"
-                format="full"
-                haltonerror="true"
-                haltonwarning="true">
-            <fileset dir="src/Blackprism/CouchbaseODM">
-                <include name="**/*.php" />
-            </fileset>
-            <formatter type="full" outfile="php://stdout" />
-        </phpcodesniffer>
+        <exec
+            command="./bin/phpcs
+            --standard='PSR2,vendor/object-calisthenics/phpcs-calisthenics-rules/src/ObjectCalisthenics/ruleset.xml'
+            src/Blackprism/CouchbaseODM"
+            passthru="true"
+        />
     </target>
 
     <target name="phplint">

@@ -2,7 +2,6 @@
 
 namespace Blackprism\Demo\Repository\City;
 
-use Blackprism\CouchbaseODM\Bucket\CanInvoke;
 use Blackprism\CouchbaseODM\Bucket\Provider;
 use Blackprism\CouchbaseODM\Bucket\ProviderAware;
 use Blackprism\CouchbaseODM\Bucket\Readable;
@@ -10,6 +9,7 @@ use Blackprism\CouchbaseODM\Bucket\Readable\Query;
 use Blackprism\CouchbaseODM\Repository\MappingFactory;
 use Blackprism\CouchbaseODM\Repository\MappingFactoryAware;
 use Blackprism\CouchbaseODM\Serializer\Decoder\ArrayDecoder;
+use Blackprism\CouchbaseODM\Serializer\Decoder\MergePaths;
 use Blackprism\CouchbaseODM\Serializer\Denormalizer;
 use Blackprism\CouchbaseODM\Value\BucketName;
 use Blackprism\Demo\Repository\Mayor;
@@ -44,7 +44,39 @@ class SmallRepository implements ProviderAware, MappingFactoryAware
         return $this->bucketProvider->getReadableBucket(new BucketName(self::BUCKET_NAME));
     }
 
-    public function getCitiesAndMayorAndMapping()
+    public function getCitiesWithMayor()
+    {
+        $n1ql = '
+            SELECT
+                city,
+                meta(city).id as `city.id`,
+                mayor as `city.mayor`,
+                meta(mayor).id as `city.mayor.id`
+            FROM `odm-test` AS city
+            LEFT JOIN `odm-test` AS mayor ON KEYS city.mayorId
+            WHERE city.type = "city" AND mayor.type = "mayor"
+            ORDER BY city.name';
+
+        $result = (new Readable\Query($n1ql))->execute($this->getReadableBucket());
+
+        $normalizers = [
+            new Denormalizer\Collection(),
+            new Denormalizer\Mapping(
+                $this->mappingFactory->get(MappingDefinition::class)
+            )
+        ];
+
+        $encoders = [
+            new MergePaths('')
+        ];
+
+        $serializer = new Serializer($normalizers, $encoders);
+
+        return $serializer->deserialize($result->rows(), 'collection[city]', MergePaths::class);
+    }
+
+
+    public function getCitiesAndMayor()
     {
         $n1ql = '
             SELECT *
@@ -65,6 +97,6 @@ class SmallRepository implements ProviderAware, MappingFactoryAware
 
         $serializer = new Serializer($normalizers, [new ArrayDecoder()]);
 
-        return $serializer->deserialize($result->rows(), 'collection[mayor]', 'array');
+        return $serializer->deserialize($result->rows(), 'collection[]', 'array');
     }
 }

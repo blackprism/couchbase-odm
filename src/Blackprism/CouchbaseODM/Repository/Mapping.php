@@ -14,28 +14,17 @@ final class Mapping implements IsMapping
     /**
      * @var string
      */
-    private $root = '';
-
-    /**
-     * @var string
-     */
     private $class = '';
 
     /**
      * @var array
      */
+    private $propertyType = [];
+
+    /**
+     * @var array
+     */
     private $properties = [];
-
-    public function rootIs(string $root): IsMapping
-    {
-        $this->root = $root;
-        return $this;
-    }
-
-    public function getRoot(): string
-    {
-        return $this->root;
-    }
 
     public function classIs(string $class): IsMapping
     {
@@ -46,6 +35,21 @@ final class Mapping implements IsMapping
     public function getClass(): string
     {
         return $this->class;
+    }
+
+    public function propertyTypeIs(string $property, string $value): IsMapping
+    {
+        $this->propertyType = [
+            'property' => $property,
+            'value'    => $value
+        ];
+
+        return $this;
+    }
+
+    public function getPropertyType(): array
+    {
+        return $this->propertyType;
     }
 
     public function propertyHasAccessors(string $property, string $setterMethod, string $getterMethod): IsMapping

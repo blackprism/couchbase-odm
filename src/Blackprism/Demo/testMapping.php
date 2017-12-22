@@ -45,7 +45,7 @@ $result = $bucket->query('select city.name as city, country.name as country from
 //echo "Connection defined\n";
 
 $pool = new Pool();
-$pool->bucketSettings(new BucketSetting(new Dsn('couchbase://localhost'), new BucketName('odm-test'), 'toto'));
+$pool->bucketSettings(new BucketSetting(new Dsn('couchbase://localhost'), new BucketName('odm-test'), 'voiture'));
 echo "Pool defined\n";
 
 $mappingFactory = new MappingFactory();
@@ -57,18 +57,28 @@ echo "RepositoryFactory created\n";
 
 $cityBucketWithConnection = $repositoryFactory->get(new \Blackprism\Demo\Repository\City\SmallRepository());
 
-/*
-$city1 = $cityBucketWithConnection->get('city-1');
-var_dump($city1);
-exit;
-*/
+//$city1 = $cityBucketWithConnection->get('city-1');
+//var_dump($city1);
+//exit;
+
 
 echo "-----\n";
-$data = $cityBucketWithConnection->getCitiesAndMayorAndMapping();
+$data = $cityBucketWithConnection->getCitiesAndMayor();
 foreach ($data as $datum) {
     echo str_repeat('-', 100) . "\n";
-    $datum->setFirstname("ANNE");
-    $datum->setLastname("HIDALGO");
+//    $datum->setFirstname("ANNE");
+//    $datum->setLastname("HIDALGO");
+    var_dump($datum);
+}
+
+
+echo "-----\n";
+$data = $cityBucketWithConnection->getCitiesWithMayor();
+foreach ($data as $datum) {
+    echo str_repeat('-', 100) . "\n";
+//    $datum->setName("Boum");
+//    $datum->setFirstname("ANNE");
+//    $datum->setLastname("HIDALGO");
     var_dump($datum);
 }
 die;

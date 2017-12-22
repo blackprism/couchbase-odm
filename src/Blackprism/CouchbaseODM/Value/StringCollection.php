@@ -22,7 +22,7 @@ class StringCollection implements IteratorAggregate
     /**
      * StringCollection constructor.
      *
-     * @param \string[] ...$identifiers
+     * @param string[int] ...$identifiers
      */
     public function __construct(string ...$identifiers)
     {

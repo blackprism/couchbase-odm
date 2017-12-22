@@ -17,8 +17,8 @@ class MappingDefinition implements GiveMapping
     {
         $mapping = new Mapping();
         $mapping
-            ->rootIs('city')
             ->classIs(City::class)
+            ->propertyTypeIs('type', 'city')
             ->propertyHasAccessors('id', 'setId', 'getId')
             ->propertyHasAccessors('name', 'setName', 'getName')
             ->propertyHasMappingAndAccessors(

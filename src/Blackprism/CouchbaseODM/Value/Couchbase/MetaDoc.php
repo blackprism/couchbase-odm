@@ -19,7 +19,7 @@ final class MetaDoc
     private $value;
 
     /**
-     * @var \CouchbaseException|null
+     * @var Exception|null
      */
     private $error;
 
@@ -34,7 +34,7 @@ final class MetaDoc
     private $cas;
 
     /**
-     * @var \CouchbaseMutationToken|null
+     * @var Couchbase\MutationToken|null
      */
     private $token;
 
@@ -90,7 +90,7 @@ final class MetaDoc
     }
 
     /**
-     * @return \CouchbaseMutationToken|null
+     * @return Couchbase\MutationToken|null
      */
     public function token()
     {

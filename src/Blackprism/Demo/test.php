@@ -54,25 +54,26 @@ echo "MappingFactory created\n";
 $repositoryFactory = new RepositoryFactory($pool, $mappingFactory);
 echo "RepositoryFactory created\n";
 
-$cityBucketWithConnection = $repositoryFactory->get(new \Blackprism\Demo\Repository\City\Repository());
-$mayorRepository = $repositoryFactory->get(new Mayor\Repository());
 
+$cityRepository  = $repositoryFactory->get(new \Blackprism\Demo\Repository\City\Repository());
+$mayorRepository = $repositoryFactory->get(new Mayor\Repository());
+/*
 var_dump($mayorRepository->getMayors());
 die;
 
-$city1 = $cityBucketWithConnection->get('city-1');
+$city1 = $cityRepository->get('city-1');
 
 var_dump($city1);
 
 echo "-----\n";
 //$result = $cityBucketWithConnection->getCitiesWithMayor();
-$result = $cityBucketWithConnection->getCitiesWithMayorAndMergePath();
+$result = $cityRepository->getCitiesWithMayorAndMergePath();
 var_dump($result);
 foreach ($result as $truc) {
     var_dump($truc);
 }
 die;
-
+*/
 
 
 //
@@ -109,7 +110,7 @@ $cities = $cityRepository->getCitiesWithMayor();
 foreach ($cities as $city) {
     var_dump($city);
 }
-//die;
+
 $cities[2]->setName('Paris (' . uniqid('edited-') . ')');
 $country = $cities[2]->getCountry();
 $country->setName('France (' . uniqid('edited-') . ')');
@@ -120,17 +121,11 @@ $cities[2]->setMayor($mayor);
 //var_dump($cities);
 //var_dump($cities[2]);
 var_dump($cities[2]->getPropertiesChanged());
-$documentsToUpdate = $cityRepository->getSerializer()->serialize($cities[2], 'json');
-var_dump($documentsToUpdate);
-die;
 //
-//$cityRepository->save($cities[2]);
+$cityRepository->save($cities[2]);
 //var_dump($cities[2], $documentsToUpdate);
 //
 //die;
-
-
-
 
 //try {
 //    var_dump($mayorRepository->getMayors());

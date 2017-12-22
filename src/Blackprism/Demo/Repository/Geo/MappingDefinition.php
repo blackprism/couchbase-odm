@@ -1,12 +1,12 @@
 <?php
 
-namespace Blackprism\Demo\Repository\Mayor;
+namespace Blackprism\Demo\Repository\Geo;
 
 use Blackprism\CouchbaseODM\Repository\GiveMapping;
 use Blackprism\CouchbaseODM\Repository\IsMapping;
 use Blackprism\CouchbaseODM\Repository\Mapping;
 use Blackprism\CouchbaseODM\Repository\MappingFactory;
-use Blackprism\Demo\Model\Mayor;
+use Blackprism\Demo\Model\Geo;
 
 class MappingDefinition implements GiveMapping
 {
@@ -14,11 +14,10 @@ class MappingDefinition implements GiveMapping
     {
         $mapping = new Mapping();
         $mapping
-            ->classIs(Mayor::class)
-            ->propertyTypeIs('type', 'mayor')
-            ->propertyHasAccessors('id', 'setId', 'getId')
-            ->propertyHasAccessors('firstname', 'setFirstname', 'getFirstname')
-            ->propertyHasAccessors('lastname', 'setLastname', 'getLastname')
+            ->classIs(Geo::class)
+            ->propertyTypeIs('type', 'geo')
+            ->propertyHasAccessors('lat', 'setLat', 'getLat')
+            ->propertyHasAccessors('lon', 'setLon', 'getLon')
         ;
 
         var_dump(self::class . " created");

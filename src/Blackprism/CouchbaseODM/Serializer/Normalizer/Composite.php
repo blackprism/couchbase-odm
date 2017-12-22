@@ -30,6 +30,8 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
      * @param array $context
      *
      * @throws \UnexpectedValueException
+     *
+     * @return array
      */
     private function getOptionsAndMappingFromContext(array $context)
     {
@@ -129,6 +131,7 @@ final class Composite implements NormalizerAwareInterface, NormalizerInterface
     /**
      * @param object $object
      * @param array  $mapping
+     * @param array  $context
      *
      * @return array
      */

@@ -26,15 +26,15 @@ trait NotifyPropertyChangedTrait
     }
 
     /**
-     * Notify all observers with old and new values.
+     * Track property changed.
      *
      * @param string $propertyName
      * @param mixed  $oldValue
      * @param mixed  $newValue
      *
-     * @return self
+     * @return NotifyPropertyChangedInterface
      */
-    private function propertyChanged(string $propertyName, $oldValue, $newValue): self
+    private function propertyChanged(string $propertyName, $oldValue, $newValue): NotifyPropertyChangedInterface
     {
         if ($this->isTracked() === false) {
             return $this;
@@ -52,12 +52,36 @@ trait NotifyPropertyChangedTrait
         return $this;
     }
 
+    public function getOriginalPropertiesValue(): array
+    {
+        return array_column($this->properties, 0);
+    }
+
+    public function getCurrentPropertiesValue(): array
+    {
+        return array_column($this->properties, 1);
+    }
+
     /**
-     * @return array
+     * @TODO benchmark this
      */
     public function getPropertiesChanged(): array
     {
         return array_filter($this->properties, function ($item) {
+            if ($item[0] instanceof NotifyPropertyChangedInterface
+                && $item[1] instanceof NotifyPropertyChangedInterface) {
+                $propertiesChanged = [];
+
+                $currentPropertiesValue = $item[1]->getCurrentPropertiesValue();
+                foreach ($item[0]->getOriginalPropertiesValue() as $index => $propertyValue) {
+                    if ($propertyValue !== $currentPropertiesValue[$index]) {
+                        $propertiesChanged[] = $currentPropertiesValue[$index];
+                    }
+                }
+
+                return $propertiesChanged;
+            }
+
             return $item[0] !== $item[1];
         });
     }
