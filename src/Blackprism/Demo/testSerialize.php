@@ -53,10 +53,7 @@ $cities = [$luxiol, $palaiseau];
 $normalizers = [
     new Normalizer\Collection(),
     new Normalizer\Mapping(
-        $mappingFactory->get(MappingDefinition::class),
-        $mappingFactory->get(\Blackprism\Demo\Repository\Country\MappingDefinition::class),
-        $mappingFactory->get(\Blackprism\Demo\Repository\Mayor\MappingDefinition::class),
-        $mappingFactory->get(\Blackprism\Demo\Repository\Geo\MappingDefinition::class)
+        $mappingFactory->get(new MappingDefinition())
     )
 ];
 

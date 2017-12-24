@@ -15,17 +15,17 @@ final class MappingFactory
     private $mappings = [];
 
     /**
-     * @param string $mappingClassName
+     * @param GiveMapping $mapping
      *
      * @return IsMapping
      */
-    public function get(string $mappingClassName): IsMapping
+    public function get(GiveMapping $mapping): IsMapping
     {
-        if (isset($this->mappings[$mappingClassName]) === false) {
-            $mappingFactory = new $mappingClassName;
-            $this->mappings[$mappingClassName] = $mappingFactory->getMapping($this);
+        $mappingIdentifier = get_class($mapping);
+        if (isset($this->mappings[$mappingIdentifier]) === false) {
+            $this->mappings[$mappingIdentifier] = $mapping->getMapping($this);
         }
 
-        return $this->mappings[$mappingClassName];
+        return $this->mappings[$mappingIdentifier];
     }
 }

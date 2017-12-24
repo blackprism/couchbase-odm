@@ -20,7 +20,7 @@ class MappingDefinition implements GiveMapping
             ->propertyHasAccessors('name', 'setName', 'getName')
             ->propertyHasMappingAndAccessors(
                 'geo',
-                $mappingFactory->get(Geo\MappingDefinition::class),
+                $mappingFactory->get(new Geo\MappingDefinition()),
                 'setGeo',
                 'getGeo'
             )

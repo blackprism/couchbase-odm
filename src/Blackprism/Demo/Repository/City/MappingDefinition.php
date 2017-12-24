@@ -23,19 +23,19 @@ class MappingDefinition implements GiveMapping
             ->propertyHasAccessors('name', 'setName', 'getName')
             ->propertyHasMappingAndAccessors(
                 'country',
-                $mappingFactory->get(Country\MappingDefinition::class),
+                $mappingFactory->get(new Country\MappingDefinition()),
                 'countryIs',
                 'getCountry'
             )
             ->propertyHasMappingAndAccessors(
                 'geo',
-                $mappingFactory->get(Geo\MappingDefinition::class),
+                $mappingFactory->get(new Geo\MappingDefinition()),
                 'setGeo',
                 'getGeo'
             )
             ->propertyHasMappingAndAccessors(
                 'mayor',
-                $mappingFactory->get(Mayor\MappingDefinition::class),
+                $mappingFactory->get(new Mayor\MappingDefinition()),
                 'setMayor',
                 'getMayor'
             )
