@@ -40,7 +40,7 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        if (is_array($data) === false && $data instanceof \Traversable === false) {
+        if (is_iterable($data) === false) {
             return new \EmptyIterator(); // @TODO how to log/inform about this error ?
         }
 

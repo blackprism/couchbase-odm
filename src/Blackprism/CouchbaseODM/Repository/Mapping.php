@@ -117,4 +117,13 @@ final class Mapping implements IsMapping
 
         return $this->properties[$property]['getter'];
     }
+
+    /**
+     * @todo il faut un meilleur type de retour
+     * @return array
+     */
+    public function getProperties(): array
+    {
+        return $this->properties;
+    }
 }

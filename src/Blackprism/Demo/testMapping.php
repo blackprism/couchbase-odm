@@ -149,58 +149,8 @@ $mayorRepository->connectionIs($connection);
 //    var_dump($e);
 //}
 
-$france = new Model\Country();
-$france->setName('France (yeah this one)');
-
-$mayorLuxiol = new Model\Mayor();
-//$mayorLuxiol->setId('mayor-2');
-$mayorLuxiol->setFirstname('Christophe');
-$mayorLuxiol->setLastname('Colin');
-
-$luxiol = new Model\City();
-//$luxiol->setId('city-3');
-$luxiol->setName('Luxiol');
-$luxiol->setMayorId('mayor-2');
-$luxiol->countryIs($france);
-$luxiol->setMayor($mayorLuxiol);
-
 //var_dump($luxiol);
 //$cityRepository->getBucket()->save($json);
 $documentsToUpdate = $cityRepository->getSerializer()->serialize($luxiol, 'array');
 var_dump($documentsToUpdate);
 die;
-
-
-$mayorPalaiseau = new Model\Mayor();
-//$mayorPalaiseau->setId('mayor-1');
-$mayorPalaiseau->setFirstname('Grégoire');
-$mayorPalaiseau->setLastname('Lasteyrie');
-
-$geo = new Model\Geo();
-$geo->setLat(37.7825);
-$geo->setLon(-122.393);
-
-$palaiseau = new Model\City();
-//$palaiseau->setId('city-3');
-$palaiseau->setName('Palaiseau');
-$palaiseau->setMayorId('mayor-1');
-$palaiseau->countryIs(clone $france);
-$palaiseau->setMayor($mayorPalaiseau);
-$palaiseau->setGeo($geo);
-
-$cities = [['city' => $luxiol], ['city' => $palaiseau]];
-$cities = [$luxiol, $palaiseau];
-
-//var_export($cities);
-$serializer = $cityRepository->getSerializer();
-
-
-$json = $serializer->serialize($cities, 'json');
-
-var_dump($json, json_decode($json, true));
-
-die;
-$cityRepository->getBucket()->save($json);
-
-exit;
-system("echo '" . $serializer->serializeCollection($cities) . "' | jsonpp");

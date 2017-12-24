@@ -42,7 +42,7 @@ class Mapping implements DenormalizerAwareInterface, DenormalizerInterface
      *
      * @return object
      */
-    private function mapValuesToObject(array $values, IsMapping $mapping)
+    private function denormalizeValuesToObject(array $values, IsMapping $mapping)
     {
         $className = $mapping->getClass();
         $object = new $className;
@@ -106,7 +106,7 @@ class Mapping implements DenormalizerAwareInterface, DenormalizerInterface
                 $propertyType = $mapping->getPropertyType();
                 if (isset($values[$propertyType['property']]) === true
                     && $values[$propertyType['property']] === $propertyType['value']) {
-                    $newData[$objectKeyName] = $this->mapValuesToObject($values, $mapping);
+                    $newData[$objectKeyName] = $this->denormalizeValuesToObject($values, $mapping);
                 }
             }
         }
