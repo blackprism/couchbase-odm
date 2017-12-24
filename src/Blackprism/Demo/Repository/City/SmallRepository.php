@@ -44,6 +44,13 @@ class SmallRepository implements ProviderAware, MappingFactoryAware
         return $this->bucketProvider->getReadableBucket(new BucketName(self::BUCKET_NAME));
     }
 
+    /**
+     * @throws \Blackprism\CouchbaseODM\Exception\Exception
+     * @throws \Symfony\Component\Serializer\Exception\NotEncodableValueException
+     * @throws \Symfony\Component\Serializer\Exception\NotNormalizableValueException
+     *
+     * @return object
+     */
     public function getCitiesWithMayor()
     {
         $n1ql = '
@@ -62,12 +69,12 @@ class SmallRepository implements ProviderAware, MappingFactoryAware
         $normalizers = [
             new Denormalizer\Collection(),
             new Denormalizer\Mapping(
-                $this->mappingFactory->get(MappingDefinition::class)
+                $this->mappingFactory->get(new MappingDefinition())
             )
         ];
 
         $encoders = [
-            new MergePaths('')
+            new MergePaths()
         ];
 
         $serializer = new Serializer($normalizers, $encoders);
@@ -90,8 +97,8 @@ class SmallRepository implements ProviderAware, MappingFactoryAware
         $normalizers = [
             new Denormalizer\Collection(),
             new Denormalizer\Mapping(
-                $this->mappingFactory->get(MappingDefinition::class),
-                $this->mappingFactory->get(Mayor\MappingDefinition::class)
+                $this->mappingFactory->get(new MappingDefinition()),
+                $this->mappingFactory->get(new Mayor\MappingDefinition())
             )
         ];
 

@@ -12,61 +12,8 @@ use Traversable;
 /**
  * MergePaths
  */
-class MergePaths implements ChainableInterface
+class MergePaths implements DecoderInterface
 {
-
-    /**
-     * Type to use for output of denormalize.
-     *
-     * @var string
-     */
-    private $type;
-
-    /**
-     * @var ChainableInterface
-     */
-    private $next = null;
-
-    /**
-     * MergePaths constructor.
-     *
-     * @param string $type type to use for output of denormalize
-     */
-    public function __construct(string $type)
-    {
-        $this->type = $type;
-    }
-
-    /**
-     * @param DecoderInterface $chainableDecoder
-     *
-     * @return ChainableInterface
-     */
-    public function nextIs(ChainableInterface $chainableDecoder): ChainableInterface
-    {
-        $this->next = $chainableDecoder;
-
-        return $this;
-    }
-
-    /**
-     * @param mixed $data
-     * @param string $format
-     * @param array $context
-     *
-     * @return int|string|bool|array
-     *
-     * @throws UnexpectedValueException
-     */
-    private function next($data, $format, array $context = array())
-    {
-        if ($this->next !== null) {
-            return $this->next->decode($data, $format, $context);
-        }
-
-        return $data;
-    }
-
     /**
      * @param array  $values
      * @param string $key
@@ -133,9 +80,9 @@ class MergePaths implements ChainableInterface
      * are encouraged to document which formats they support in a non-inherited
      * phpdoc comment.
      *
-     * @return mixed
-     *
      * @throws UnexpectedValueException
+     *
+     * @return mixed
      */
     public function decode($data, $format, array $context = array())
     {
@@ -152,7 +99,7 @@ class MergePaths implements ChainableInterface
             });
         }
 
-        return $this->next($data, $format, $context);
+        return $data;
     }
 
     /**

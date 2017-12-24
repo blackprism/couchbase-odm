@@ -107,7 +107,7 @@ class Repository implements ProviderAware, MappingFactoryAware
         $normalizers = [
             new Denormalizer\Collection(),
             new Denormalizer\Mapping(
-                $this->mappingFactory->get(MappingDefinition::class)
+                $this->mappingFactory->get(new MappingDefinition())
             )
         ];
 
@@ -145,7 +145,7 @@ class Repository implements ProviderAware, MappingFactoryAware
 
         $normalizers = [
             new Denormalizer\Collection(),
-            new Denormalizer\Mapping($this->mappingFactory->get(MappingDefinition::class))
+            new Denormalizer\Mapping($this->mappingFactory->get(new MappingDefinition()))
         ];
 
         $encoders = [
@@ -171,8 +171,8 @@ class Repository implements ProviderAware, MappingFactoryAware
         $normalizers = [
             new Denormalizer\Collection(),
             new Denormalizer\Mapping(
-                $this->mappingFactory->get(MappingDefinition::class),
-                $this->mappingFactory->get(Mayor\MappingDefinition::class)
+                $this->mappingFactory->get(new MappingDefinition()),
+                $this->mappingFactory->get(new Mayor\MappingDefinition())
             )
         ];
 
@@ -203,7 +203,7 @@ class Repository implements ProviderAware, MappingFactoryAware
         $normalizers = [
             new Denormalizer\Collection(),
             new Denormalizer\Mapping(
-                $this->mappingFactory->get(MappingDefinition::class)
+                $this->mappingFactory->get(new MappingDefinition())
             )
         ];
 
@@ -224,7 +224,7 @@ class Repository implements ProviderAware, MappingFactoryAware
         $normalizers = [
             new Denormalizer\Collection(),
             new Denormalizer\Mapping(
-                $this->mappingFactory->get(MappingDefinition::class)
+                $this->mappingFactory->get(new MappingDefinition())
             )
         ];
 

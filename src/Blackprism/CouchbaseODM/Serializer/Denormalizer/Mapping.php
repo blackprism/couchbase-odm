@@ -51,7 +51,7 @@ class Mapping implements DenormalizerAwareInterface, DenormalizerInterface
 
         array_walk($valuesCanBeMapped, function ($value, $property) use ($mapping, $object) {
             if ($mapping->propertyHasMapping($property) === true) {
-                $value = $this->mapValuesToObject($value, $mapping->getPropertyMapping($property));
+                $value = $this->denormalizeValuesToObject($value, $mapping->getPropertyMapping($property));
             }
 
             $object->{$mapping->getPropertySetter($property)}($value);
