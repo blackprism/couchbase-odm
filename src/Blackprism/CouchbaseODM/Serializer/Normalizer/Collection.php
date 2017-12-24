@@ -2,10 +2,12 @@
 
 namespace Blackprism\CouchbaseODM\Serializer\Normalizer;
 
+use Symfony\Component\Serializer\Exception\CircularReferenceException;
+use Symfony\Component\Serializer\Exception\InvalidArgumentException;
+use Symfony\Component\Serializer\Exception\LogicException;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\scalar;
 
 /**
  * Collection
@@ -17,15 +19,19 @@ class Collection implements NormalizerAwareInterface, NormalizerInterface
     /**
      * Normalizes an object into a set of arrays/scalars.
      *
-     * @param object $values  object to normalize
-     * @param string $format  format the normalization result will be encoded as
-     * @param array  $context Context options for the normalizer
+     * @param object $iterable Iterable object to normalize
+     * @param string $format   format the normalization result will be encoded as
+     * @param array  $context  Context options for the normalizer
+     *
+     * @throws InvalidArgumentException
+     * @throws CircularReferenceException
+     * @throws LogicException
      *
      * @return array|scalar
      */
-    public function normalize($values, $format = null, array $context = [])
+    public function normalize($iterable, $format = null, array $context = [])
     {
-        if (is_iterable($values) === false) {
+        if (is_iterable($iterable) === false) {
             return [];
         }
 
@@ -33,11 +39,14 @@ class Collection implements NormalizerAwareInterface, NormalizerInterface
             return [];
         }
 
-        foreach ($values as &$value) {
-            $value = $this->normalizer->normalize($value, $format, $context);
+        $normalized = [];
+
+        foreach ($iterable as $key => $value) {
+            var_dump($key);
+            $normalized[$key] = $this->normalizer->normalize($value, $format, $context);
         }
 
-        return $values;
+        return $normalized;
     }
 
     /**

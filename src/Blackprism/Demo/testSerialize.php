@@ -46,8 +46,9 @@ $palaiseau->countryIs(clone $france);
 $palaiseau->setMayor($mayorPalaiseau);
 $palaiseau->setGeo($geo);
 
-$cities = [['city' => $luxiol], ['city' => $palaiseau]];
-$cities = [$luxiol, $palaiseau];
+$cities = [['luxiol' => $luxiol], ['palaiseau' => $palaiseau]];
+//$cities = ['luxiol' => $luxiol, 'palaiseau' => $palaiseau];
+//$cities = [$luxiol, $palaiseau];
 
 
 $normalizers = [
