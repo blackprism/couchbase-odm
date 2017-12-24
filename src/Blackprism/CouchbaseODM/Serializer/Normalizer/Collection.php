@@ -42,7 +42,6 @@ class Collection implements NormalizerAwareInterface, NormalizerInterface
         $normalized = [];
 
         foreach ($iterable as $key => $value) {
-            var_dump($key);
             $normalized[$key] = $this->normalizer->normalize($value, $format, $context);
         }
 
