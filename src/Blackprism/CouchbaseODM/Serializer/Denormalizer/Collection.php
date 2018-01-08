@@ -4,17 +4,13 @@ declare(strict_types = 1);
 
 namespace Blackprism\CouchbaseODM\Serializer\Denormalizer;
 
-use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
-use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 /**
  * Collection
  */
-class Collection implements DenormalizerAwareInterface, DenormalizerInterface
+class Collection implements DenormalizerInterface
 {
-
-    use DenormalizerAwareTrait;
 
     /**
      * Type to use for output of denormalize.
@@ -63,8 +59,6 @@ class Collection implements DenormalizerAwareInterface, DenormalizerInterface
      */
     private function denormalizeWithKeyToExtract($value, string $format, array $context, string $keyToExtract)
     {
-        $value = $this->denormalizer->denormalize($value, $this->type, $format, $context);
-
         if ($keyToExtract !== '') {
             $value = $value[$keyToExtract];
         }

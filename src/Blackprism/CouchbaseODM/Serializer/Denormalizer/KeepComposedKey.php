@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Blackprism\CouchbaseODM\Serializer\Decoder;
+namespace Blackprism\CouchbaseODM\Serializer\Denormalizer;
 
 class KeepComposedKey extends \FilterIterator
 {
@@ -11,6 +11,10 @@ class KeepComposedKey extends \FilterIterator
      */
     public function accept()
     {
+        if (is_string($this->key()) === false) {
+            return false;
+        }
+
         return strpos($this->key(), '.') !== false;
     }
 }

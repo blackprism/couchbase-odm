@@ -2,18 +2,18 @@
 
 declare(strict_types = 1);
 
-namespace Blackprism\CouchbaseODM\Serializer\Decoder;
+namespace Blackprism\CouchbaseODM\Serializer\Denormalizer;
 
 use ArrayIterator;
-use Symfony\Component\Serializer\Encoder\DecoderInterface;
-use Symfony\Component\Serializer\Exception\UnexpectedValueException;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Traversable;
 
 /**
  * MergePaths
  */
-class MergePaths implements DecoderInterface
+class MergePaths implements DenormalizerInterface
 {
+
     /**
      * @param array  $values
      * @param string $key
@@ -69,24 +69,17 @@ class MergePaths implements DecoderInterface
     }
 
     /**
-     * Decodes a string into PHP data.
+     * Denormalizes data back into an object of the given class.
      *
-     * @param string $data    Data to decode
-     * @param string $format  Format name
-     * @param array  $context options that decoders have access to
+     * @param mixed  $data    data to restore
+     * @param string $class   the expected class to instantiate
+     * @param string $format  format the given data was extracted from
+     * @param array  $context options available to the denormalizer
      *
-     * The format parameter specifies which format the data is in; valid values
-     * depend on the specific implementation. Authors implementing this interface
-     * are encouraged to document which formats they support in a non-inherited
-     * phpdoc comment.
-     *
-     * @throws UnexpectedValueException
-     *
-     * @return mixed
+     * @return object
      */
-    public function decode($data, $format, array $context = array())
+    public function denormalize($data, $class, $format = null, array $context = array())
     {
-        // @TODO bizarre le type hint est string et on dit que ça peut être un array un objet ou autre ?!
         if (is_array($data) === true) {
             array_walk($data, function (&$item) {
                 $item = $this->merge($item);
@@ -103,15 +96,17 @@ class MergePaths implements DecoderInterface
     }
 
     /**
-     * Checks whether the deserializer can decode from given format.
+     * Checks whether the given class is supported for denormalization by this normalizer.
      *
-     * @param string $format format name
+     * @param mixed  $data   Data to denormalize from
+     * @param string $type   The class to which the data should be denormalized
+     * @param string $format The format being deserialized from
      *
      * @return bool
      */
-    public function supportsDecoding($format)
+    public function supportsDenormalization($data, $type, $format = null)
     {
-        if ($format === self::class || $format === $this->type) {
+        if ($format === self::class) {
             echo self::class . "\n";
             return true;
         }

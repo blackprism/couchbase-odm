@@ -9,7 +9,6 @@ use Blackprism\CouchbaseODM\Bucket\Readable\Query;
 use Blackprism\CouchbaseODM\Repository\MappingFactory;
 use Blackprism\CouchbaseODM\Repository\MappingFactoryAware;
 use Blackprism\CouchbaseODM\Serializer\Decoder\ArrayDecoder;
-use Blackprism\CouchbaseODM\Serializer\Decoder\MergePaths;
 use Blackprism\CouchbaseODM\Serializer\Denormalizer;
 use Blackprism\CouchbaseODM\Value\BucketName;
 use Blackprism\Demo\Repository\Mayor;
@@ -67,19 +66,19 @@ class SmallRepository implements ProviderAware, MappingFactoryAware
         $result = (new Readable\Query($n1ql))->execute($this->getReadableBucket());
 
         $normalizers = [
-            new Denormalizer\Collection(),
-            new Denormalizer\Mapping(
-                $this->mappingFactory->get(new MappingDefinition())
-            )
+            (new Denormalizer\DenormalizerChain())
+                ->chain(new Denormalizer\MergePaths())
+                ->chain(new Denormalizer\Collection())
+                ->chain(new Denormalizer\Mapping($this->mappingFactory->get(new MappingDefinition())))
         ];
 
         $encoders = [
-            new MergePaths()
+            new ArrayDecoder()
         ];
 
         $serializer = new Serializer($normalizers, $encoders);
 
-        return $serializer->deserialize($result->rows(), 'collection[city]', MergePaths::class);
+        return $serializer->deserialize($result->rows(), 'collection[city]', 'array');
     }
 
 

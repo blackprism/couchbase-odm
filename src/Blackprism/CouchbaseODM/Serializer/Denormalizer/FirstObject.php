@@ -12,10 +12,8 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 /**
  * FirstObject
  */
-class FirstObject implements DenormalizerAwareInterface, DenormalizerInterface
+class FirstObject implements DenormalizerInterface
 {
-
-    use DenormalizerAwareTrait;
 
     /**
      * Type to use for output of denormalize.

@@ -36,7 +36,7 @@ class ArrayDecoder implements DecoderInterface
      */
     public function supportsDecoding($format)
     {
-        if (self::FORMAT === $format) {
+        if ($format === 'array') {
             return true;
         }
 

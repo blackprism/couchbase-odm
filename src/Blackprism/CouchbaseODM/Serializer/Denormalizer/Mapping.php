@@ -9,17 +9,13 @@ use Blackprism\CouchbaseODM\Observer\NotifyPropertyChangedInterface;
 use Blackprism\CouchbaseODM\Repository\GiveMapping;
 use Blackprism\CouchbaseODM\Repository\IsMapping;
 use Blackprism\CouchbaseODM\Repository\MappingFactory;
-use Symfony\Component\Serializer\Normalizer\DenormalizerAwareInterface;
-use Symfony\Component\Serializer\Normalizer\DenormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 /**
  * Mapping
  */
-class Mapping implements DenormalizerAwareInterface, DenormalizerInterface
+class Mapping implements DenormalizerInterface
 {
-
-    use DenormalizerAwareTrait;
 
     /**
      * @var array

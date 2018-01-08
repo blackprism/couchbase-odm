@@ -67,8 +67,7 @@ class Repository implements ProviderAware, MappingFactoryAware
         $metaDoc = (new Readable\Get($id))->execute($this->getReadableBucket());
 
         $normalizers = [
-            new City\Configuration\Denormalizer(),
-            new Country\Configuration\Denormalizer(),
+            new Denormalizer\Mapping($this->mappingFactory->get(new MappingDefinition()))
         ];
 
         $encoders = [
@@ -77,7 +76,7 @@ class Repository implements ProviderAware, MappingFactoryAware
 
         $serializer = new Serializer($normalizers, $encoders);
 
-        return $serializer->deserialize($metaDoc->value(), 'city', 'json');
+        return $serializer->deserialize($metaDoc->value(), Denormalizer\Mapping::class, 'json');
     }
 
 

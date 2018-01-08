@@ -55,21 +55,21 @@ $repositoryFactory = new RepositoryFactory($pool, $mappingFactory);
 echo "RepositoryFactory created\n";
 
 
-$cityBucketWithConnection = $repositoryFactory->get(new \Blackprism\Demo\Repository\City\SmallRepository());
+$cityBucketWithConnection = $repositoryFactory->get(new \Blackprism\Demo\Repository\City\Repository());
 
-//$city1 = $cityBucketWithConnection->get('city-1');
-//var_dump($city1);
-//exit;
-
-
-echo "-----\n";
-$data = $cityBucketWithConnection->getCitiesAndMayor();
-foreach ($data as $datum) {
-    echo str_repeat('-', 100) . "\n";
-//    $datum->setFirstname("ANNE");
-//    $datum->setLastname("HIDALGO");
-    var_dump($datum);
-}
+$city1 = $cityBucketWithConnection->get('city-1');
+var_dump($city1);
+exit;
+//
+//
+//echo "-----\n";
+//$data = $cityBucketWithConnection->getCitiesAndMayor();
+//foreach ($data as $datum) {
+//    echo str_repeat('-', 100) . "\n";
+////    $datum->setFirstname("ANNE");
+////    $datum->setLastname("HIDALGO");
+//    var_dump($datum);
+//}
 
 
 echo "-----\n";
