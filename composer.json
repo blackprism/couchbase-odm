@@ -22,7 +22,7 @@
         "atoum/stubs": "^2.5",
         "vimeo/psalm": "dev-master",
         "object-calisthenics/phpcs-calisthenics-rules": "dev-master",
-        "phpstan/phpstan": "^0.9"
+        "phpstan/phpstan": "^0.11"
     },
     "config": {
         "bin-dir": "bin"
